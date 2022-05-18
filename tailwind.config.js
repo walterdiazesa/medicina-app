@@ -4,7 +4,14 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      width: {
+        a4: "21cm",
+      },
+      height: {
+        a4: "29.7cm",
+      },
+    },
   },
   plugins: [],
 };
