@@ -7,5 +7,5 @@ export const listen = (
   event: EventType,
   listener: (...args: any[]) => void
 ) => {
-  socket.off("test_created").on(event, listener);
+  socket.on(event, listener);
 };
