@@ -13,13 +13,29 @@ import {
   XCircleIcon,
 } from "@heroicons/react/outline";
 import Link from "next/link";
+import { listen, socket } from "../../socketio";
 
 const index = () => {
+  const [, updateState] = React.useState<any>();
+  const forceUpdate = React.useCallback(() => updateState({}), []);
   const [tests, setTests] = useState<Test[] | null>();
 
   useEffect(() => {
     get({ order: "desc" }).then((_tests) => setTests(_tests));
   }, []);
+
+  useEffect(() => {
+    listen("test_created", (args: Test[]) => {
+      if (tests && !tests.some((test) => test.id === args[0].id)) {
+        setTests((_tests) => {
+          _tests!.unshift(args[0]);
+          return _tests;
+        });
+        forceUpdate();
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tests]);
 
   if (tests === undefined)
     return (
@@ -109,4 +125,4 @@ const index = () => {
   );
 };
 
-export default index;
+export default React.memo(index);
