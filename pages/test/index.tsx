@@ -62,7 +62,7 @@ const index = () => {
     <div className="min-w-full px-2 md:px-8">
       {tests.map((test) => (
         <Link key={test.id!} href={`/test/${test.id!}`}>
-          <>
+          <div>
             {test.justInTime && (
               <span className="animate-ping absolute inline-flex h-1.5 w-1.5 rounded-full bg-teal-500 opacity-75 mt-1 ml-0.5" />
             )}
@@ -128,7 +128,7 @@ const index = () => {
                 </p>
               </div>
             </div>
-          </>
+          </div>
         </Link>
       ))}
     </div>
