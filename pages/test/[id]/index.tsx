@@ -86,7 +86,7 @@ const index = ({ test }: { test: Test | null }) => {
           >
             {testPDF.loading ? (
               <div className="animate-pulse flex items-center">
-                <Spinner pulse /> Generando reporte
+                <Spinner pulse /> Generando...
               </div>
             ) : testPDF.error ? (
               <>
