@@ -7,4 +7,5 @@ export const baseURL =
 
 export const api = axios.create({
   baseURL,
+  validateStatus: (status) => true,
 });

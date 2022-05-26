@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { get } from "../../axios/Test";
 import { Spinner } from "../../components/Icons";
 import { Test } from "../../types/Test";
@@ -14,6 +14,7 @@ import {
 } from "@heroicons/react/outline";
 import Link from "next/link";
 import { listen, socket } from "../../socketio";
+import { useRouter } from "next/router";
 
 interface RealTimeTest extends Test {
   justInTime?: boolean;

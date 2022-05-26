@@ -16,13 +16,16 @@ import { useRouter } from "next/router";
 import React from "react";
 import { ButtonWithIcon, Transition } from "../..";
 import Image from "next/image";
+import { login, logout } from "../../../axios/Auth";
+import { Auth } from "../../../types/Auth";
+import { ResponseError } from "../../../types/Responses";
 
 const index = ({
   isAuth,
   setAuth,
 }: {
-  isAuth: boolean;
-  setAuth: React.Dispatch<React.SetStateAction<boolean>>;
+  isAuth: Auth;
+  setAuth: React.Dispatch<React.SetStateAction<Auth>>;
 }) => {
   const router = useRouter();
   return (
@@ -129,8 +132,10 @@ const index = ({
                               <Menu.Item>
                                 <a
                                   className="hover:bg-gray-200 cursor-pointer flex px-4 py-2 text-sm text-gray-500 items-center"
-                                  onClick={() => {
-                                    setAuth(false);
+                                  onClick={async () => {
+                                    await logout();
+                                    setAuth(null);
+                                    router.replace("/");
                                   }}
                                 >
                                   <LogoutIcon className="w-4 h-4 mr-1.5" />
@@ -168,52 +173,109 @@ const index = ({
                             <Menu.Item>
                               {({ active }) => (
                                 <div className="px-4 py-2">
-                                  <div
-                                    className="block relative text-gray-400 focus-within:text-gray-600 w-full"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
+                                  <form
+                                    onSubmit={async (form) => {
+                                      form.preventDefault();
+                                      form.stopPropagation();
+                                      const formData = new FormData(
+                                        form.target as HTMLFormElement
+                                      );
+                                      if (
+                                        !formData.has("username") ||
+                                        !formData.has("password")
+                                      )
+                                        return alert(
+                                          "No puedes dejar ningún campo vacío. x"
+                                        );
+                                      const username = formData
+                                        .get("username")!
+                                        .toString()
+                                        .trim();
+                                      const password = formData
+                                        .get("password")!
+                                        .toString()
+                                        .trim();
+                                      if (!username || !password)
+                                        return alert(
+                                          "No puedes dejar ningún campo vacío. y"
+                                        );
+                                      const user = await login(
+                                        username,
+                                        password
+                                      );
+                                      if (user instanceof ResponseError) {
+                                        // Clear, focus and red
+                                        const [usernameInput, passwordInput] =
+                                          form.target as any;
+                                        (
+                                          form.target as HTMLFormElement
+                                        ).reset();
+                                        (
+                                          usernameInput as HTMLInputElement
+                                        ).classList.remove("border-gray");
+                                        (
+                                          passwordInput as HTMLInputElement
+                                        ).classList.remove("border-gray");
+                                        (
+                                          usernameInput as HTMLInputElement
+                                        ).classList.add("border-red");
+                                        (
+                                          passwordInput as HTMLInputElement
+                                        ).classList.add("border-red");
+                                        (
+                                          usernameInput as HTMLInputElement
+                                        ).focus();
+                                        return alert(JSON.stringify(user));
+                                      }
+                                      setAuth(user);
                                     }}
                                   >
-                                    <input
-                                      type="text"
-                                      name="email"
-                                      className="py-1.5 text-sm text-gray-400 rounded-md pr-8 pl-3 border-2 border-gray focus:border-gray-600 focus:border-opacity-40 focus:outline-none bg-white focus:text-gray-600 w-full"
-                                      placeholder="email"
-                                      autoComplete="off"
-                                    />
-                                    <span className="absolute inset-y-0 right-0 flex items-center pr-2">
-                                      <AtSymbolIcon className="p-0.5 w-5 h-5 focus:outline-none focus:shadow-outline" />
-                                    </span>
-                                  </div>
-                                  <div
-                                    className="block relative text-gray-400 focus-within:text-gray-600 w-full my-2.5"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                    }}
-                                  >
-                                    <input
-                                      type="password"
-                                      name="password"
-                                      className="py-1.5 text-sm text-gray-400 rounded-md pr-8 pl-3 border-2 border-gray focus:border-gray-600 focus:border-opacity-40 focus:outline-none bg-white focus:text-gray-600 w-full"
-                                      placeholder="contraseña"
-                                      autoComplete="off"
-                                    />
-                                    <span className="absolute inset-y-0 right-0 flex items-center pr-2">
-                                      <KeyIcon className="p-0.5 w-5 h-5 focus:outline-none focus:shadow-outline" />
-                                    </span>
-                                  </div>
-                                  <ButtonWithIcon
-                                    className="text-sm font-medium w-full px-6 py-1.5 justify-center"
-                                    text="Ingresar"
-                                    onClick={() => setAuth(true)}
-                                  >
-                                    <LoginIcon
-                                      className="w-5 h-5 text-white"
-                                      aria-hidden="true"
-                                    />
-                                  </ButtonWithIcon>
+                                    <div
+                                      className="block relative text-gray-400 focus-within:text-gray-600 w-full"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                      }}
+                                    >
+                                      <input
+                                        type="text"
+                                        name="username"
+                                        className="py-1.5 text-sm text-gray-400 rounded-md pr-8 pl-3 border-2 border-gray focus:border-gray-600 focus:border-opacity-40 focus:outline-none bg-white focus:text-gray-600 w-full"
+                                        placeholder="email, id o slug (lab o usuario)"
+                                        autoComplete="off"
+                                      />
+                                      <span className="absolute inset-y-0 right-0 flex items-center pr-2">
+                                        <AtSymbolIcon className="p-0.5 w-5 h-5 focus:outline-none focus:shadow-outline" />
+                                      </span>
+                                    </div>
+                                    <div
+                                      className="block relative text-gray-400 focus-within:text-gray-600 w-full my-2.5"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                      }}
+                                    >
+                                      <input
+                                        type="password"
+                                        name="password"
+                                        className="py-1.5 text-sm text-gray-400 rounded-md pr-8 pl-3 border-2 border-gray focus:border-gray-600 focus:border-opacity-40 focus:outline-none bg-white focus:text-gray-600 w-full"
+                                        placeholder="contraseña"
+                                        autoComplete="off"
+                                      />
+                                      <span className="absolute inset-y-0 right-0 flex items-center pr-2">
+                                        <KeyIcon className="p-0.5 w-5 h-5 focus:outline-none focus:shadow-outline" />
+                                      </span>
+                                    </div>
+                                    <ButtonWithIcon
+                                      className="text-sm font-medium w-full px-6 py-1.5 justify-center"
+                                      text="Ingresar"
+                                    >
+                                      <LoginIcon
+                                        className="w-5 h-5 text-white"
+                                        aria-hidden="true"
+                                      />
+                                    </ButtonWithIcon>
+                                  </form>
                                   <div className="w-full text-center">
                                     <p className="text-sm text-gray-400 hover:text-gray-500 cursor-pointer mt-2 mb-2 font-semibold">
                                       ¿Olvidaste tu contraseña?
