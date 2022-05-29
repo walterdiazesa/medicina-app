@@ -2,6 +2,7 @@
 // @ts-nocheck
 import React from "react";
 import { getTestItemName, Test } from "../../../types/Prisma/Test";
+import { getTestItemName } from "../../../types/Test";
 import {
   Page,
   Text,
