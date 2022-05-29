@@ -1,5 +1,5 @@
 import { api } from "..";
-import { Test } from "../../types/Test";
+import { Test } from "../../types/Prisma/Test";
 
 type TestParams = {
   order?: "asc" | "desc";
