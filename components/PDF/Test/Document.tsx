@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 // @ts-nocheck
 import React from "react";
-import { getTestItemName, Test } from "../../../types/Test";
+import { getTestItemName, Test } from "../../../types/Prisma/Test";
 import {
   Page,
   Text,

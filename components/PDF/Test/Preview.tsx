@@ -1,6 +1,6 @@
 import Image from "next/image";
 import React from "react";
-import { Test } from "../../../types/Test";
+import { Test } from "../../../types/Prisma/Test";
 
 const HeaderItem = ({ item }: { item: string[] }) => {
   return (
