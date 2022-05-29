@@ -4,39 +4,47 @@ import React, { useEffect, useState } from "react";
 import { Auth } from "../../types/Auth";
 import Navbar from "./Navbar";
 import { auth as tryAuth } from "../../axios/Auth";
+import { Spinner } from "../Icons";
+
+const SECURE_ROUTES = new Set(["/", "/pricing", "/register", "/_error"]);
 
 const index = ({ children }: { children: JSX.Element }) => {
   const router = useRouter();
-  const [isAuth, _setAuth] = useState(false);
   const [auth, setAuth] = useState<Auth>(null);
 
   // Manage Auth
   useEffect(() => {
     tryAuth().then((_auth) => {
       if (_auth) setAuth(_auth);
-      else router.replace("/");
+      else if (!SECURE_ROUTES.has(router.pathname)) router.replace("/");
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // Secure routes
   useEffect(() => {
-    const secureRoutes = new Set(["/"]);
     const handleRouteChange = (url: string) => {
-      console.log(`App is changing to ${url}`);
-      if (!secureRoutes.has(url) && !auth) router.replace("/");
+      if (!SECURE_ROUTES.has(url) && !auth) router.replace("/");
     };
 
-    router.events.on("routeChangeStart", handleRouteChange);
+    router.events.on("beforeHistoryChange", handleRouteChange);
 
     return () => {
-      router.events.off("routeChangeStart", handleRouteChange);
+      router.events.off("beforeHistoryChange", handleRouteChange);
     };
   }, [auth, router, router.pathname]);
 
   return (
     <>
       <Navbar isAuth={auth} setAuth={setAuth} />
-      {{ ...children, props: { ...children.props, auth } }}
+      {!auth && !SECURE_ROUTES.has(router.pathname) ? (
+        <div className="min-w-full min-h-screen-navbar flex justify-center items-center -translate-y-16">
+          <Spinner size="big" color="text-gray-300" />
+        </div>
+      ) : (
+        <div className="min-w-full min-h-[calc(100vh-8rem)] px-2 md:px-8">
+          {{ ...children, props: { ...children.props, auth, setAuth } }}
+        </div>
+      )}
     </>
   );
 };

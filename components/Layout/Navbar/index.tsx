@@ -19,6 +19,7 @@ import Image from "next/image";
 import { login, logout } from "../../../axios/Auth";
 import { Auth } from "../../../types/Auth";
 import { ResponseError } from "../../../types/Responses";
+import { Informacion } from "./Item";
 
 const index = ({
   isAuth,
@@ -61,7 +62,7 @@ const index = ({
                           <div>
                             <Menu.Button className="flex">
                               <a className="bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 px-3 py-2 rounded-md text-sm font-semibold">
-                                Servicios
+                                Información
                               </a>
                             </Menu.Button>
                           </div>
@@ -70,31 +71,29 @@ const index = ({
                               static
                               className="origin-top-left absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-gray-200 ring-1 ring-black ring-opacity-5 focus:outline-none 2xl:z-50"
                             >
-                              <Menu.Item>
-                                {({ active }) => (
-                                  <a
-                                    className={
-                                      (active && "bg-gray-300") +
-                                      " cursor-pointer block px-4 py-2 text-sm text-gray-500"
-                                    }
-                                    onClick={() => close()}
-                                  >
-                                    Servicios - Dropdown 1
-                                  </a>
-                                )}
-                              </Menu.Item>
+                              <Informacion close={close} />
                             </Menu.Items>
                           </Transition>
                         </>
                       )}
                     </Menu>
+                    <Link href="/pricing">
+                      <a
+                        className="bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 px-3 py-2 rounded-md text-sm font-semibold"
+                        onClick={() => close()}
+                      >
+                        Precios
+                      </a>
+                    </Link>
                   </div>
                 </div>
               </div>
               {isAuth ? (
                 <>
                   <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                    <p className="text-gray-500 hidden md:block">username</p>
+                    <p className="text-gray-500 hidden md:block">
+                      {isAuth["sub"]}
+                    </p>
 
                     <Menu as="div" className="ml-3 relative z-50">
                       {({ open }) => (
@@ -172,8 +171,15 @@ const index = ({
                           >
                             <Menu.Item>
                               {({ active }) => (
-                                <div className="px-4 py-2">
+                                <div
+                                  className="px-4 py-2"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                  }}
+                                >
                                   <form
+                                    id="auth_form"
                                     onSubmit={async (form) => {
                                       form.preventDefault();
                                       form.stopPropagation();
@@ -230,37 +236,44 @@ const index = ({
                                       setAuth(user);
                                     }}
                                   >
-                                    <div
-                                      className="block relative text-gray-400 focus-within:text-gray-600 w-full"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                      }}
-                                    >
+                                    <div className="block relative text-gray-400 focus-within:text-gray-600 w-full">
                                       <input
                                         type="text"
                                         name="username"
                                         className="py-1.5 text-sm text-gray-400 rounded-md pr-8 pl-3 border-2 border-gray focus:border-gray-600 focus:border-opacity-40 focus:outline-none bg-white focus:text-gray-600 w-full"
                                         placeholder="email, id o slug (lab o usuario)"
                                         autoComplete="off"
+                                        onKeyDown={(e) => {
+                                          if (e.code === "Tab")
+                                            (
+                                              document.getElementsByName(
+                                                "password"
+                                              )[0] as HTMLInputElement
+                                            ).focus();
+                                        }}
                                       />
                                       <span className="absolute inset-y-0 right-0 flex items-center pr-2">
                                         <AtSymbolIcon className="p-0.5 w-5 h-5 focus:outline-none focus:shadow-outline" />
                                       </span>
                                     </div>
-                                    <div
-                                      className="block relative text-gray-400 focus-within:text-gray-600 w-full my-2.5"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                      }}
-                                    >
+                                    <div className="block relative text-gray-400 focus-within:text-gray-600 w-full my-2.5">
                                       <input
                                         type="password"
                                         name="password"
                                         className="py-1.5 text-sm text-gray-400 rounded-md pr-8 pl-3 border-2 border-gray focus:border-gray-600 focus:border-opacity-40 focus:outline-none bg-white focus:text-gray-600 w-full"
                                         placeholder="contraseña"
                                         autoComplete="off"
+                                        onKeyDown={(e) => {
+                                          if (e.code === "Enter") {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            (
+                                              document.getElementsByName(
+                                                "login_submit"
+                                              )[0] as HTMLButtonElement
+                                            ).click();
+                                          }
+                                        }}
                                       />
                                       <span className="absolute inset-y-0 right-0 flex items-center pr-2">
                                         <KeyIcon className="p-0.5 w-5 h-5 focus:outline-none focus:shadow-outline" />
@@ -269,6 +282,14 @@ const index = ({
                                     <ButtonWithIcon
                                       className="text-sm font-medium w-full px-6 py-1.5 justify-center"
                                       text="Ingresar"
+                                      name="login_submit"
+                                      onClick={() => {
+                                        (
+                                          document.getElementById(
+                                            "auth_form"
+                                          ) as HTMLFormElement
+                                        ).requestSubmit();
+                                      }}
                                     >
                                       <LoginIcon
                                         className="w-5 h-5 text-white"
@@ -322,7 +343,7 @@ const index = ({
                       <div>
                         <Menu.Button className="flex w-full">
                           <a className="w-full px-3 py-2 text-left">
-                            Servicios
+                            Información
                           </a>
                         </Menu.Button>
                       </div>
@@ -331,24 +352,20 @@ const index = ({
                           static
                           className="origin-top absolute left-0 mt-1 rounded-md shadow-lg py-1 bg-gray-200 ring-1 ring-black ring-opacity-5 focus:outline-none z-1 w-full"
                         >
-                          <Menu.Item>
-                            {({ active }) => (
-                              <a
-                                className={
-                                  (active && "bg-gray-300") +
-                                  " cursor-pointer block px-4 py-2 text-sm text-gray-500"
-                                }
-                                onClick={() => close()}
-                              >
-                                Servicios - Dropdown móvil 1
-                              </a>
-                            )}
-                          </Menu.Item>
+                          <Informacion close={close} />
                         </Menu.Items>
                       </Transition>
                     </>
                   )}
                 </Menu>
+                <Link href="/pricing">
+                  <a
+                    className="block bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => close()}
+                  >
+                    Precios
+                  </a>
+                </Link>
               </div>
             </Disclosure.Panel>
           </Transition>

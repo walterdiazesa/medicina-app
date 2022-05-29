@@ -1,10 +1,3 @@
-export interface TestItem {
-  name: string;
-  assign: string; // "=" | "<"
-  value: string;
-  range?: { item: number; between: { from: number; to: number } };
-}
-
 const testItemKeyValue: {
   [key: string]: { name: string; desc: string; group: string };
 } = {
@@ -174,12 +167,3 @@ export const getTestItemName = (test: string) => {
     }
   );
 };
-
-export interface Test {
-  id?: string;
-  labId: string;
-  patientId: string;
-  sex: "Masculino" | "Femenino" | "No especificado";
-  date: Date;
-  tests: TestItem[];
-}

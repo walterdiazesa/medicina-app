@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { GetStaticProps } from "next";
 import { useRouter } from "next/router";
-import { get } from "../../../axios/Test";
-import { Test } from "../../../types/Test";
+import { get, isTestAuthorized } from "../../../axios/Test";
+import { Test } from "../../../types/Prisma/Test";
 import { Spinner } from "../../../components/Icons";
 import {
   DocumentDownloadIcon,
@@ -14,9 +14,38 @@ import {
 import { Document, Preview } from "../../../components/PDF";
 // @ts-ignore
 import { usePDF } from "@react-pdf/renderer/lib/react-pdf.browser.cjs";
+import { Auth } from "../../../types/Auth";
 
-const index = ({ test }: { test: Test | null }) => {
+const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = useState<boolean>();
+
+  useEffect(() => {
+    if (auth && test) {
+      isTestAuthorized(test.id!).then((authorized) =>
+        setIsAuthorized(authorized)
+      );
+    }
+  }, [auth, test]);
+
+  const [testPDF, _] = usePDF({
+    document: test ? <Document test={test} /> : <></>,
+  });
+
+  if (isAuthorized === undefined)
+    return (
+      <div className="min-w-full min-h-screen-navbar flex justify-center items-center -translate-y-16">
+        <Spinner size="big" color="text-gray-300" />
+      </div>
+    );
+
+  if (!isAuthorized)
+    return (
+      <h1 className="mt-8 text-xl font-semibold text-red-400 flex items-center justify-center min-w-full">
+        <XCircleIcon className="h-6 w-6 mr-2" />
+        No estas autorizado para ver este test.
+      </h1>
+    );
 
   if (router.isFallback)
     return (
@@ -35,7 +64,6 @@ const index = ({ test }: { test: Test | null }) => {
     );
 
   // const [testPDF, _] = useState({ loading: false, error: "", url: "/" });
-  const [testPDF, _] = usePDF({ document: <Document test={test} /> });
 
   return (
     <>
@@ -103,22 +131,14 @@ const index = ({ test }: { test: Test | null }) => {
               </>
             )}
           </button>
-          <button className="w-1/2 sm:w-auto mx-auto sm:mx-4 rounded-sm bg-green-700 hover:bg-green-900 px-6 py-2 shadow-md my-2 hover:scale-105 transition duration-100 flex items-center text-white">
+          {/* <button className="w-1/2 sm:w-auto mx-auto sm:mx-4 rounded-sm bg-green-700 hover:bg-green-900 px-6 py-2 shadow-md my-2 hover:scale-105 transition duration-100 flex items-center text-white">
             <DocumentReportIcon className="h-6 w-6 mr-2 text-white" />
             Download Excel
           </button>
           <button className="w-1/2 sm:w-auto mx-auto sm:mx-0 rounded-sm bg-blue-500 hover:bg-blue-700 px-6 py-2 shadow-md my-2 hover:scale-105 transition duration-100 flex items-center text-white">
             <DocumentTextIcon className="h-6 w-6 mr-2 text-white" />
             Download Word
-          </button>
-          {/* <PDFDownloadLink
-            document={<Document test={test} />}
-            fileName={`${test.id}.pdf`}
-          >
-            {({ blob, url, loading, error }) =>
-              loading ? "Loading document..." : `Download now! > ${url}`
-            }
-          </PDFDownloadLink> */}
+          </button> */}
         </div>
       </div>
       {/* <div className="flex justify-center mt-8">

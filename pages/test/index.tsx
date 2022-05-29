@@ -2,7 +2,7 @@
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { get } from "../../axios/Test";
 import { Spinner } from "../../components/Icons";
-import { Test } from "../../types/Test";
+import { Test } from "../../types/Prisma/Test";
 import {
   DocumentDownloadIcon,
   DocumentReportIcon,
@@ -60,78 +60,86 @@ const index = () => {
     );
 
   return (
-    <div className="min-w-full px-2 md:px-8">
-      {tests.map((test) => (
-        <Link key={test.id!} href={`/test/${test.id!}`}>
-          <div>
-            {test.justInTime && (
-              <span className="animate-ping absolute inline-flex h-1.5 w-1.5 rounded-full bg-teal-500 opacity-75 mt-1 ml-0.5" />
-            )}
-            <div className="rounded-sm bg-zinc-50 hover:bg-zinc-100 px-2 py-2 shadow-md my-4 flex items-center justify-between cursor-pointer">
-              <div className="flex items-center">
-                <div className="h-full w-5 mr-2">
-                  <UserIcon
-                    className={`h-5 w-5 ${
-                      test.sex === "Femenino"
-                        ? "text-pink-400"
-                        : test.sex === "Masculino"
-                        ? "text-sky-600"
-                        : "text-gray-700"
-                    }`}
-                  />
+    <div>
+      {!tests.length ? (
+        <div className="min-h-screen-navbar min-w-full flex justify-center items-center -translate-y-16">
+          <h1>
+            Esto está muy vacío, empieza por hacer una petición en el CHEM
+          </h1>
+        </div>
+      ) : (
+        tests.map((test) => (
+          <Link key={test.id!} href={`/test/${test.id!}`}>
+            <div>
+              {test.justInTime && (
+                <span className="animate-ping absolute inline-flex h-1.5 w-1.5 rounded-full bg-teal-500 opacity-75 mt-1 ml-0.5" />
+              )}
+              <div className="rounded-sm bg-zinc-50 hover:bg-zinc-100 px-2 py-2 shadow-md my-4 flex items-center justify-between cursor-pointer">
+                <div className="flex items-center">
+                  <div className="h-full w-5 mr-2">
+                    <UserIcon
+                      className={`h-5 w-5 ${
+                        test.sex === "Femenino"
+                          ? "text-pink-400"
+                          : test.sex === "Masculino"
+                          ? "text-sky-600"
+                          : "text-gray-700"
+                      }`}
+                    />
+                  </div>
+                  <p className="text-gray-500 font-semibold w-32 sm:w-36 text-sm sm:text-base">
+                    {new Date(test.date).toLocaleString()}
+                  </p>
+                  <p
+                    className={`${
+                      test.labId ? "text-gray-500" : "text-gray-400"
+                    } font-semibold flex items-center md:w-56 mr-2.5 md:mr-0`}
+                  >
+                    <OfficeBuildingIcon
+                      className={`h-5 w-5 ${
+                        !test.labId ? "text-zinc-400" : "text-zinc-600"
+                      } md:text-zinc-400`}
+                    />
+                    <span className="hidden md:block truncate">
+                      : {test.lab?.name || "No lab"}
+                    </span>
+                  </p>
+                  <p
+                    className={`${
+                      test.patientId ? "text-gray-500" : "text-gray-400"
+                    } font-semibold flex items-center md:w-36 mr-2 md:mr-0`}
+                  >
+                    <IdentificationIcon
+                      className={`h-5 w-5 ${
+                        !test.patientId ? "text-zinc-400" : "text-zinc-500"
+                      } md:text-zinc-400`}
+                    />
+                    <span className="hidden md:block">
+                      : {test.patientId || "No patient"}
+                    </span>
+                  </p>
                 </div>
-                <p className="text-gray-500 font-semibold w-32 sm:w-36 text-sm sm:text-base">
-                  {new Date(test.date).toLocaleString()}
-                </p>
-                <p
-                  className={`${
-                    test.labId ? "text-gray-500" : "text-gray-400"
-                  } font-semibold flex items-center md:w-36 mr-2.5 md:mr-0`}
-                >
-                  <OfficeBuildingIcon
-                    className={`h-5 w-5 ${
-                      !test.patientId ? "text-zinc-400" : "text-zinc-500"
-                    } md:text-zinc-400`}
-                  />
-                  <span className="hidden md:block">
-                    : {test.labId || "No lab"}
-                  </span>
-                </p>
-                <p
-                  className={`${
-                    test.patientId ? "text-gray-500" : "text-gray-400"
-                  } font-semibold flex items-center md:w-36 mr-2 md:mr-0`}
-                >
-                  <IdentificationIcon
-                    className={`h-5 w-5 ${
-                      !test.patientId ? "text-zinc-400" : "text-zinc-500"
-                    } md:text-zinc-400`}
-                  />
-                  <span className="hidden md:block">
-                    : {test.patientId || "No patient"}
-                  </span>
-                </p>
-              </div>
-              <div className="flex items-center truncate">
-                <DocumentDownloadIcon className="h-5 w-5 mr-2 text-red-500 hover:text-red-900" />
-                <DocumentReportIcon className="h-5 w-5 mr-2 text-green-700 hover:text-green-900" />
-                <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-500 hover:text-blue-700" />
-                <p
-                  className={`text-gray-500 font-semibold text-sm sm:text-base hidden sm:block`}
-                >
-                  [
-                  {(
-                    JSON.parse(JSON.stringify(test.tests, ["name"])) as {
-                      name: string;
-                    }[]
-                  ).map(({ name }, idx) => (idx ? ", " : "") + name)}
-                  ]{/* [{"name":"GLU-PS"},{"name":"TCHO-PS"}] */}
-                </p>
+                <div className="flex items-center truncate">
+                  <DocumentDownloadIcon className="h-5 w-5 mr-2 text-red-500 hover:text-red-900" />
+                  {/* <DocumentReportIcon className="h-5 w-5 mr-2 text-green-700 hover:text-green-900" />
+                  <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-500 hover:text-blue-700" /> */}
+                  <p
+                    className={`text-gray-500 font-semibold text-sm sm:text-base hidden sm:block`}
+                  >
+                    [
+                    {(
+                      JSON.parse(JSON.stringify(test.tests, ["name"])) as {
+                        name: string;
+                      }[]
+                    ).map(({ name }, idx) => (idx ? ", " : "") + name)}
+                    ]{/* [{"name":"GLU-PS"},{"name":"TCHO-PS"}] */}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </Link>
-      ))}
+          </Link>
+        ))
+      )}
     </div>
   );
 };

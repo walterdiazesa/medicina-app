@@ -5,14 +5,17 @@ const ButtonWithIcon = ({
   text,
   className,
   onClick,
+  name,
 }: {
   children: JSX.Element;
   text: string;
   className?: string;
   onClick?: () => void;
+  name?: string;
 }) => {
   return (
     <button
+      {...(name && { name })}
       onClick={onClick}
       className={`${className} bg-teal-500 hover:bg-teal-400 text-white font-bold ${
         !className || !className.includes("py-") ? "py-2" : ""
@@ -21,7 +24,7 @@ const ButtonWithIcon = ({
       } border-b-4 border-teal-700 hover:border-teal-500 rounded align-middle inline-flex items-center`}
     >
       {icon}
-      <span className="ml-2 my-auto pt-0.5">{text}</span>
+      <span className="ml-2">{text}</span>
     </button>
   );
 };

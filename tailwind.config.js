@@ -11,6 +11,15 @@ module.exports = {
       height: {
         a4: "29.7cm",
       },
+      minHeight: {
+        "screen-navbar": "calc(100vh - 4rem)",
+      },
+      minWidth: {
+        screen: "100vw",
+      },
+      zIndex: {
+        1: "1",
+      },
     },
   },
   plugins: [],
