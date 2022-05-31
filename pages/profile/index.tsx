@@ -13,14 +13,14 @@ const index = () => {
 
   useEffect(() => {
     // 3600 = servidor.LISTENER_SIGNED_URL_EXPIRE
-    getLaboratories({ fields: { installer: true, name: true } }).then(
+    getLaboratories({ fields: { installer: true, name: true, id: true } }).then(
       (_installers) => setInstallers(_installers)
     );
     const revalidateListenersSignedUrls = setInterval(
       () =>
-        getLaboratories({ fields: { installer: true, name: true } }).then(
-          (_installers) => setInstallers(_installers)
-        ),
+        getLaboratories({
+          fields: { installer: true, name: true, id: true },
+        }).then((_installers) => setInstallers(_installers)),
       3600 * 1000
     );
 
@@ -30,21 +30,17 @@ const index = () => {
     };
   }, []);
 
-  listen(
-    "installer_created",
-    ({ lab, signedUrl }: { lab: string; signedUrl: string }) => {
-      setInstallers((_installers) => {
-        if (!_installers || !_installers.length) return _installers;
-        const updatedInstallers = [..._installers!];
-        const updatedLabIdx = updatedInstallers.findIndex(
-          ({ id }) => id === lab
-        );
-        if (updatedLabIdx !== -1)
-          updatedInstallers[updatedLabIdx].installer = signedUrl;
-        return updatedInstallers;
-      });
-    }
-  );
+  listen("installer_created", (args) => {
+    const { lab, signedUrl }: { lab: string; signedUrl: string } = args[0];
+    setInstallers((_installers) => {
+      if (!_installers || !_installers.length) return _installers;
+      const updatedInstallers = [..._installers];
+      const updatedLabIdx = updatedInstallers.findIndex(({ id }) => id === lab);
+      if (updatedLabIdx !== -1)
+        updatedInstallers[updatedLabIdx].installer = signedUrl;
+      return updatedInstallers;
+    });
+  });
 
   return (
     <div className="mt-2 md:mt-8">
