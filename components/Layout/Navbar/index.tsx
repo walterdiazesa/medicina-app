@@ -13,7 +13,7 @@ import {
 } from "@heroicons/react/outline";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React from "react";
+import React, { useCallback } from "react";
 import { ButtonWithIcon, Transition } from "../..";
 import Image from "next/image";
 import { login, logout } from "../../../axios/Auth";
@@ -29,6 +29,33 @@ const index = ({
   setAuth: React.Dispatch<React.SetStateAction<Auth>>;
 }) => {
   const router = useRouter();
+
+  const submitLoginForm = useCallback(
+    async (form: HTMLFormElement): Promise<any> => {
+      const formData = new FormData(form);
+      if (!formData.has("username") || !formData.has("password"))
+        return alert("No puedes dejar ningún campo vacío. x");
+      const username = formData.get("username")!.toString().trim();
+      const password = formData.get("password")!.toString().trim();
+      if (!username || !password)
+        return alert("No puedes dejar ningún campo vacío. y");
+      const user = await login(username, password);
+      if (user instanceof ResponseError) {
+        // Clear, focus and red
+        const [usernameInput, passwordInput] = form as any;
+        form.reset();
+        (usernameInput as HTMLInputElement).classList.remove("border-gray");
+        (passwordInput as HTMLInputElement).classList.remove("border-gray");
+        (usernameInput as HTMLInputElement).classList.add("border-red");
+        (passwordInput as HTMLInputElement).classList.add("border-red");
+        (usernameInput as HTMLInputElement).focus();
+        return alert(JSON.stringify(user));
+      }
+      setAuth(user);
+    },
+    [setAuth]
+  );
+
   return (
     <Disclosure as="nav" className="bg-white relative z-50 shadow-md">
       {({ open, close }) => (
@@ -178,64 +205,7 @@ const index = ({
                                     e.stopPropagation();
                                   }}
                                 >
-                                  <form
-                                    id="auth_form"
-                                    onSubmit={async (form) => {
-                                      form.preventDefault();
-                                      form.stopPropagation();
-                                      const formData = new FormData(
-                                        form.target as HTMLFormElement
-                                      );
-                                      if (
-                                        !formData.has("username") ||
-                                        !formData.has("password")
-                                      )
-                                        return alert(
-                                          "No puedes dejar ningún campo vacío. x"
-                                        );
-                                      const username = formData
-                                        .get("username")!
-                                        .toString()
-                                        .trim();
-                                      const password = formData
-                                        .get("password")!
-                                        .toString()
-                                        .trim();
-                                      if (!username || !password)
-                                        return alert(
-                                          "No puedes dejar ningún campo vacío. y"
-                                        );
-                                      const user = await login(
-                                        username,
-                                        password
-                                      );
-                                      if (user instanceof ResponseError) {
-                                        // Clear, focus and red
-                                        const [usernameInput, passwordInput] =
-                                          form.target as any;
-                                        (
-                                          form.target as HTMLFormElement
-                                        ).reset();
-                                        (
-                                          usernameInput as HTMLInputElement
-                                        ).classList.remove("border-gray");
-                                        (
-                                          passwordInput as HTMLInputElement
-                                        ).classList.remove("border-gray");
-                                        (
-                                          usernameInput as HTMLInputElement
-                                        ).classList.add("border-red");
-                                        (
-                                          passwordInput as HTMLInputElement
-                                        ).classList.add("border-red");
-                                        (
-                                          usernameInput as HTMLInputElement
-                                        ).focus();
-                                        return alert(JSON.stringify(user));
-                                      }
-                                      setAuth(user);
-                                    }}
-                                  >
+                                  <form id="auth_form">
                                     <div className="block relative text-gray-400 focus-within:text-gray-600 w-full">
                                       <input
                                         type="text"
@@ -284,11 +254,16 @@ const index = ({
                                       text="Ingresar"
                                       name="login_submit"
                                       onClick={() => {
-                                        (
+                                        submitLoginForm(
                                           document.getElementById(
                                             "auth_form"
                                           ) as HTMLFormElement
-                                        ).requestSubmit();
+                                        );
+                                        /* (
+                                          document.getElementById(
+                                            "auth_form"
+                                          ) as HTMLFormElement
+                                        ).requestSubmit(); */
                                       }}
                                     >
                                       <LoginIcon
