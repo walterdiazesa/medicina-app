@@ -30,17 +30,21 @@ const index = () => {
     };
   }, []);
 
-  listen("installer_created", (args) => {
-    const { lab, signedUrl }: { lab: string; signedUrl: string } = args[0];
-    setInstallers((_installers) => {
-      if (!_installers || !_installers.length) return _installers;
-      const updatedInstallers = [..._installers];
-      const updatedLabIdx = updatedInstallers.findIndex(({ id }) => id === lab);
-      if (updatedLabIdx !== -1)
-        updatedInstallers[updatedLabIdx].installer = signedUrl;
-      return updatedInstallers;
-    });
-  });
+  listen(
+    "installer_created",
+    ([{ lab, signedUrl }]: { lab: string; signedUrl: string }[]) => {
+      setInstallers((_installers) => {
+        if (!_installers || !_installers.length) return _installers;
+        const updatedInstallers = [..._installers];
+        const updatedLabIdx = updatedInstallers.findIndex(
+          ({ id }) => id === lab
+        );
+        if (updatedLabIdx !== -1)
+          updatedInstallers[updatedLabIdx].installer = signedUrl;
+        return updatedInstallers;
+      });
+    }
+  );
 
   return (
     <div className="mt-2 md:mt-8">
