@@ -5,6 +5,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      opacity: {
+        15: "0.15",
+      },
       width: {
         a4: "21cm",
       },

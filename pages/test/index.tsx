@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import React, { useEffect, useLayoutEffect, useState } from "react";
-import { get } from "../../axios/Test";
+import { deleteTest, get } from "../../axios/Test";
 import { Spinner } from "../../components/Icons";
 import { Test } from "../../types/Prisma/Test";
 import {
@@ -9,12 +9,14 @@ import {
   DocumentTextIcon,
   IdentificationIcon,
   OfficeBuildingIcon,
+  TrashIcon,
   UserIcon,
   XCircleIcon,
 } from "@heroicons/react/outline";
 import Link from "next/link";
 import { listen, socket } from "../../socketio";
 import { useRouter } from "next/router";
+import { ResponseError } from "../../types/Responses";
 
 interface RealTimeTest extends Test {
   justInTime?: boolean;
@@ -47,7 +49,7 @@ const index = () => {
     return (
       <h1 className="mt-8 text-xl font-semibold text-gray-400 animate-pulse flex items-center justify-center min-w-full">
         <Spinner pulse color="text-gray-400" />
-        Loading tests
+        Cargando tests
       </h1>
     );
 
@@ -101,7 +103,7 @@ const index = () => {
                       } md:text-zinc-400`}
                     />
                     <span className="hidden md:block truncate">
-                      : {test.lab?.name || "No lab"}
+                      : {test.lab?.name || "Sin laboratorio"}
                     </span>
                   </p>
                   <p
@@ -111,11 +113,11 @@ const index = () => {
                   >
                     <IdentificationIcon
                       className={`h-5 w-5 ${
-                        !test.patientId ? "text-zinc-400" : "text-zinc-500"
+                        !test.patientId ? "text-zinc-400" : "text-zinc-600"
                       } md:text-zinc-400`}
                     />
-                    <span className="hidden md:block">
-                      : {test.patientId || "No patient"}
+                    <span className="hidden md:block truncate">
+                      : {test.patient?.dui || "Sin paciente"}
                     </span>
                   </p>
                 </div>
@@ -131,9 +133,28 @@ const index = () => {
                       JSON.parse(JSON.stringify(test.tests, ["name"])) as {
                         name: string;
                       }[]
-                    ).map(({ name }, idx) => (idx ? ", " : "") + name)}
+                    ).map(
+                      ({ name }, idx) =>
+                        (idx ? ", " : "") + name.replace("-PS", "")
+                    )}
                     ]{/* [{"name":"GLU-PS"},{"name":"TCHO-PS"}] */}
                   </p>
+                  <TrashIcon
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      const deleteTestConfirm = confirm(
+                        `¿Realmente desea eliminar el test "${test.id}"?`
+                      );
+                      if (!deleteTestConfirm) return;
+                      const isDeleted = await deleteTest(test.id!);
+                      if (isDeleted instanceof ResponseError)
+                        return alert(JSON.stringify(isDeleted));
+                      setTests((_tests) =>
+                        _tests!.filter(({ id }) => id !== test.id)
+                      );
+                    }}
+                    className="h-5 w-5 ml-2 text-gray-400 hover:text-red-500"
+                  />
                 </div>
               </div>
             </div>

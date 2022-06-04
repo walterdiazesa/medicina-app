@@ -10,6 +10,8 @@ export type Lab = {
   publicEmail: string;
   img: string;
   installer: string | null;
+  rsaPrivateKey: string;
+  createdAt: Date;
   userIds: string[];
   ownerIds: string[];
 };

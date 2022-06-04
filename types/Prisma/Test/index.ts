@@ -1,3 +1,6 @@
+import { Lab } from "../Lab";
+import { Patient } from "../Patient";
+
 export interface TestItem {
   name: string;
   assign: string; // "=" | "<"
@@ -8,8 +11,9 @@ export interface TestItem {
 export interface Test {
   id?: string;
   labId: string;
-  lab?: { name: string };
+  lab?: Lab;
   patientId: string;
+  patient?: Patient;
   sex: "Masculino" | "Femenino" | "No especificado";
   date: Date;
   tests: TestItem[];

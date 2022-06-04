@@ -1,5 +1,6 @@
 import { api } from "..";
 import { Test } from "../../types/Prisma/Test";
+import { ResponseError } from "../../types/Responses";
 
 type TestParams = {
   order?: "asc" | "desc";
@@ -39,4 +40,19 @@ export const post = async (test: Test) => {
   const response = await api.post("/test", test);
   if (response.status !== 200) return null;
   return response.data as Test;
+};
+
+export const deleteTest = async (id: string) => {
+  const { status, data } = await api.delete(`/test/${id}`, {
+    withCredentials: true,
+  });
+  return status === 200 ? true : new ResponseError(data);
+};
+
+export const put = async (id: string, data: Partial<Test>) => {
+  const { status, data: testData }: { status: number; data: Test | null } =
+    await api.patch(`/test/${id}`, data, {
+      withCredentials: true,
+    });
+  return { status, testData };
 };

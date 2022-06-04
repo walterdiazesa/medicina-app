@@ -1,10 +1,11 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { GetStaticProps } from "next";
 import { useRouter } from "next/router";
-import { get, isTestAuthorized } from "../../../axios/Test";
+import { get, isTestAuthorized, put } from "../../../axios/Test";
+import { get as getPatient } from "../../../axios/Patient";
 import { Test } from "../../../types/Prisma/Test";
-import { Spinner } from "../../../components/Icons";
+import { Save, Spinner } from "../../../components/Icons";
 import {
   DocumentDownloadIcon,
   DocumentReportIcon,
@@ -15,10 +16,50 @@ import { Document, Preview } from "../../../components/PDF";
 // @ts-ignore
 import { usePDF } from "@react-pdf/renderer/lib/react-pdf.browser.cjs";
 import { Auth } from "../../../types/Auth";
+import Image from "next/image";
+import { getTestItemName } from "../../../types/Test";
+import { SearchList } from "../../../components";
+import { debounce } from "../../../utils";
+import { ResponseError } from "../../../types/Responses";
 
 const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState<boolean>();
+
+  const [isPatientLoading, setPatientLoading] = useState(false);
+  const [patients, setPatients] = useState<
+    {
+      value: number | string;
+      text: string;
+      disabled?: boolean | null;
+    }[]
+  >([]);
+  const savePatient = useRef("");
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const updatePatientQuery = useCallback(
+    debounce((query: string) => {
+      if (!query) return setPatients([]), setPatientLoading(false);
+      getPatient(query).then((AppPatient) => {
+        if (!AppPatient) return setPatients([]), setPatientLoading(false);
+        const _patients: typeof patients = [];
+        for (const patient of AppPatient) {
+          _patients.push({
+            value: patient.id,
+            text: `${patient.dui}, ${patient.name}, ${patient.sex}`,
+          });
+        }
+        setPatients(_patients);
+        setPatientLoading(false);
+      });
+    }, 1500),
+    []
+  );
+
+  const onChangePatientQuery = (patientQuery: string) => {
+    setPatientLoading(true);
+    updatePatientQuery(patientQuery);
+  };
 
   useEffect(() => {
     if (auth && test) {
@@ -71,24 +112,87 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
         <h1 className="text-xl text-gray-800">
           Test: <span className="font-bold">{test.id!}</span>
         </h1>
-        <p className="text-lg text-gray-800">
-          Fecha: <span className="font-bold">{test.date.toString()}</span>
+        <p className="text-gray-800">
+          Fecha:{" "}
+          <span className="font-bold">
+            {new Date(test.date).toLocaleString()}
+          </span>
         </p>
-        <p className="text-lg text-gray-800">
-          Laboratorio:{" "}
-          <span className="font-bold">{test.labId || "No lab"}</span>
-        </p>
-        <p className="text-lg text-gray-800">
-          Paciente:{" "}
-          <span className="font-bold">{test.patientId || "No patient"}</span>
-        </p>
-        <p className="text-lg text-gray-800">
-          Sexo: <span className="font-bold">{test.sex}</span>
+        {!test.lab ? (
+          <p className="text-gray-800">
+            Laboratorio: <span className="font-bold">Ninguno</span>
+          </p>
+        ) : (
+          <div className="my-2 text-center">
+            <div className="px-4 my-3 max-w-sm h-auto mx-auto">
+              <Image
+                src={test.lab.img}
+                alt="image_lab"
+                priority
+                width={700}
+                height={200}
+              />
+            </div>
+            <p className="text-gray-800 font-bold">
+              Información del laboratorio
+            </p>
+            <p>{test.lab.name}</p>
+            <p>{test.lab.address}</p>
+            <p>{test.lab.publicEmail}</p>
+            <p>{test.lab.publicPhone}</p>
+            {test.lab.web && <p>{test.lab.web}</p>}
+          </div>
+        )}
+        {!test.patient ? (
+          <div>
+            <p className="text-gray-800">Paciente:</p>
+            <div className="flex w-full items-center mb-2">
+              <SearchList
+                list={patients}
+                placeholder="Busca por algún identificador del paciente"
+                className="z-3 w-full"
+                addCustom
+                onQueryChange={onChangePatientQuery}
+                loading={isPatientLoading}
+                onChange={(_patient) =>
+                  (savePatient.current = _patient.value.toString())
+                }
+              />
+              <Save
+                onClick={async () => {
+                  if (!savePatient.current || savePatient.current === "-1")
+                    return alert("Necesitas seleccionar un paciente");
+                  const { status, testData } = await put(test.id!, {
+                    patientId: savePatient.current,
+                  });
+                  console.log({ status, testData });
+                  if (testData instanceof ResponseError)
+                    return alert(JSON.stringify(testData));
+                  test.patient = testData?.patient;
+                  setPatients([]); // just for forceRerender
+                }}
+                className="w-5 h-5 ml-3 fill-gray-500 hover:fill-teal-500 cursor-pointer"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="my-2">
+            <p className="text-gray-800 font-bold">Información del paciente</p>
+            <p>{test.patient.name}</p>
+            <p>{test.patient.dui}</p>
+            <p>{test.patient.sex}</p>
+            <p>{new Date(test.patient.dateBorn).toLocaleDateString()}</p>
+            <p>{test.patient.phone}</p>
+            <p>{test.patient.email}</p>
+          </div>
+        )}
+        <p className="text-gray-800">
+          Sexo según Chem: <span className="font-bold">{test.sex}</span>
         </p>
         <p className="text-lg font-bold text-gray-800">Tests:</p>
         {test.tests.map((item) => (
           <p key={item.name}>
-            {item.name} {item.assign} {item.value}
+            {getTestItemName(item.name).name} {item.assign} {item.value}
             {!item.range
               ? ""
               : `(${item.range.item}) ${item.range.between.from} - ${item.range.between.to}`}
