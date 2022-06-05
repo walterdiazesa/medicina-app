@@ -6,10 +6,14 @@ import {
   useMemo,
   useState,
   memo,
+  useRef,
+  Dispatch,
+  SetStateAction,
 } from "react";
 import { Combobox, Transition } from "@headlessui/react";
 import { RefreshIcon, SelectorIcon } from "@heroicons/react/outline";
 import { Spinner } from "../Icons/index";
+import { Modal, PatientModal } from "..";
 
 type Item = {
   value: number | string;
@@ -27,6 +31,8 @@ const index = ({
   loading,
   placeholder,
   className,
+  onCreateClick,
+  newAdded,
 }: {
   list: Item[];
   defaultValue?: number | string;
@@ -37,6 +43,8 @@ const index = ({
   loading?: boolean;
   placeholder?: string;
   className?: string;
+  onCreateClick?: () => void;
+  newAdded?: Item;
 }) => {
   const [selectedValue, setSelectedValue] = useState(() => {
     const noItem = { value: -1, text: "" };
@@ -44,6 +52,8 @@ const index = ({
     const selectedItem = list.find((item) => item.value === defaultValue);
     return !selectedItem ? noItem : selectedItem;
   });
+
+  useEffect(() => newAdded && setSelectedValue(newAdded), [newAdded]);
 
   useEffect(() => {
     if (onChange && selectedValue) onChange(selectedValue);
@@ -54,7 +64,7 @@ const index = ({
 
   const filteredList = useMemo(() => {
     return list.filter((item) =>
-      item.text.toLowerCase().includes(query.toLowerCase())
+      item.text.normalizeQuery().includes(query.normalizeQuery())
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, list]);
@@ -133,6 +143,11 @@ const index = ({
                 )}
                 {addCustom && query.length >= 2 && (
                   <Combobox.Option
+                    onClickCapture={(e: any) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (onCreateClick) onCreateClick();
+                    }}
                     value={{ value: null, text: query }}
                     className={({ active, selected }) =>
                       `relative text-sm cursor-pointer select-none py-2 px-3 border-t border-b border-gray-400 border-opacity-15 ${

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { GetStaticProps } from "next";
 import { useRouter } from "next/router";
 import { get, isTestAuthorized, put } from "../../../axios/Test";
-import { get as getPatient } from "../../../axios/Patient";
+import { create, get as getPatient } from "../../../axios/Patient";
 import { Test } from "../../../types/Prisma/Test";
 import { Save, Spinner } from "../../../components/Icons";
 import {
@@ -18,23 +18,27 @@ import { usePDF } from "@react-pdf/renderer/lib/react-pdf.browser.cjs";
 import { Auth } from "../../../types/Auth";
 import Image from "next/image";
 import { getTestItemName } from "../../../types/Test";
-import { SearchList } from "../../../components";
+import { Modal, PatientModal, SearchList } from "../../../components";
 import { debounce } from "../../../utils";
 import { ResponseError } from "../../../types/Responses";
+import { Patient } from "../../../types/Prisma";
+
+type SearchListItem = {
+  value: number | string;
+  text: string;
+  disabled?: boolean | null;
+};
 
 const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState<boolean>();
 
   const [isPatientLoading, setPatientLoading] = useState(false);
-  const [patients, setPatients] = useState<
-    {
-      value: number | string;
-      text: string;
-      disabled?: boolean | null;
-    }[]
-  >([]);
+  const [patients, setPatients] = useState<SearchListItem[]>([]);
   const savePatient = useRef("");
+  const [isCreatePatientOpen, setIsCreatePatientOpen] = useState(false);
+  const newPatientQuery = useRef("");
+  const createdNewPatient = useRef<SearchListItem>({ value: -1, text: "" });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const updatePatientQuery = useCallback(
@@ -58,6 +62,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
 
   const onChangePatientQuery = (patientQuery: string) => {
     setPatientLoading(true);
+    newPatientQuery.current = patientQuery;
     updatePatientQuery(patientQuery);
   };
 
@@ -108,6 +113,36 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
 
   return (
     <>
+      <Modal
+        open={isCreatePatientOpen}
+        setOpen={setIsCreatePatientOpen}
+        buttons={{
+          submit: { text: "Agregar", theme: "teal" },
+          cancel: { text: "Cancelar" },
+        }}
+        disableCloseWhenTouchOutside
+        submitCallback={async (items: Patient) => {
+          items["dateBorn"] = new Date(items["dateBorn"]);
+          const patient = await create(items);
+          if (patient instanceof ResponseError)
+            return alert(JSON.stringify(patient));
+          const selectedNewPatient = {
+            value: patient.id,
+            text: `${patient.dui}, ${patient.name}, ${patient.sex}`,
+          };
+          setPatients((_patients) => {
+            const patientsList = [selectedNewPatient, ..._patients];
+            return patientsList;
+          });
+          createdNewPatient.current = selectedNewPatient;
+        }}
+        requiredItems={
+          new Set(["name", "dui", "sex", "email", "phone", "dateBorn"])
+        }
+        /* initialFocus="submit" */
+      >
+        <PatientModal type="create" fromQuery={newPatientQuery.current} />
+      </Modal>
       <div className="text-center mt-8">
         <h1 className="text-xl text-gray-800">
           Test: <span className="font-bold">{test.id!}</span>
@@ -157,6 +192,8 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                 onChange={(_patient) =>
                   (savePatient.current = _patient.value.toString())
                 }
+                newAdded={createdNewPatient.current}
+                onCreateClick={() => setIsCreatePatientOpen(true)}
               />
               <Save
                 onClick={async () => {
@@ -165,7 +202,6 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                   const { status, testData } = await put(test.id!, {
                     patientId: savePatient.current,
                   });
-                  console.log({ status, testData });
                   if (testData instanceof ResponseError)
                     return alert(JSON.stringify(testData));
                   test.patient = testData?.patient;

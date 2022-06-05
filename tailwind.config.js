@@ -10,6 +10,7 @@ module.exports = {
       },
       width: {
         a4: "21cm",
+        68: "17rem",
       },
       height: {
         a4: "29.7cm",
@@ -22,6 +23,8 @@ module.exports = {
       },
       zIndex: {
         1: "1",
+        2: "2",
+        3: "3",
       },
     },
   },
