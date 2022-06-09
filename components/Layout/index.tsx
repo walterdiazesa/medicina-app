@@ -6,7 +6,14 @@ import Navbar from "./Navbar";
 import { auth as tryAuth } from "../../axios/Auth";
 import { Spinner } from "../Icons";
 
-const SECURE_ROUTES = new Set(["/", "/pricing", "/register", "/_error"]);
+const SECURE_ROUTES = new Set([
+  "/",
+  "/pricing",
+  "/register",
+  "/register/[hash]",
+  "/_error",
+]);
+const SECURE_ROUTES_REGEX = new Set([/register\/\w*/]);
 
 const index = ({ children }: { children: JSX.Element }) => {
   const router = useRouter();
@@ -23,7 +30,12 @@ const index = ({ children }: { children: JSX.Element }) => {
   // Secure routes
   useEffect(() => {
     const handleRouteChange = (url: string) => {
-      if (!SECURE_ROUTES.has(url) && !auth) router.replace("/");
+      let regexRoute = false;
+      SECURE_ROUTES_REGEX.forEach((value) => {
+        if (regexRoute) return;
+        if (value.test(url)) regexRoute = true;
+      });
+      if (!regexRoute && !SECURE_ROUTES.has(url) && !auth) router.replace("/");
     };
 
     router.events.on("beforeHistoryChange", handleRouteChange);

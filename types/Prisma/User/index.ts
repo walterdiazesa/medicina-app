@@ -9,3 +9,6 @@ export type User = {
   labIds: string[];
   ownerIds: string[];
 };
+export interface UserType extends User {
+  owner: boolean;
+}

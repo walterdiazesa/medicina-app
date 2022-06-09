@@ -6,25 +6,32 @@ const ButtonWithIcon = ({
   className,
   onClick,
   name,
+  textClassName = "",
+  disabled,
 }: {
   children: JSX.Element;
   text: string;
   className?: string;
   onClick?: () => void;
   name?: string;
+  textClassName?: string;
+  disabled?: boolean;
 }) => {
   return (
     <button
       {...(name && { name })}
       onClick={onClick}
-      className={`${className} bg-teal-500 hover:bg-teal-400 text-white font-bold ${
+      className={`${className} ${
+        disabled ? "" : "hover:bg-teal-400 hover:border-teal-500"
+      } bg-teal-500  text-white font-bold ${
         !className || !className.includes("py-") ? "py-2" : ""
       } ${
         !className || !className.includes("px-") ? "px-4" : ""
-      } border-b-4 border-teal-700 hover:border-teal-500 rounded align-middle inline-flex items-center`}
+      } border-b-4 border-teal-700 rounded align-middle inline-flex items-center`}
+      disabled={disabled}
     >
       {icon}
-      <span className="ml-2">{text}</span>
+      <span className={`ml-2 ${textClassName}`}>{text}</span>
     </button>
   );
 };

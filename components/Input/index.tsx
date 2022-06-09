@@ -10,6 +10,7 @@ const index = ({
   defaultValue = undefined,
   autofocus = undefined,
   contentsize = undefined,
+  disabled,
 }: {
   icon?: JSX.Element;
   placeholder: string;
@@ -18,6 +19,7 @@ const index = ({
   className?: string;
   defaultValue?: string;
   autofocus?: boolean;
+  disabled?: boolean;
 } & (
   | { multiline?: undefined; contentsize?: undefined }
   | { multiline: true; contentsize?: true }
@@ -28,6 +30,7 @@ const index = ({
     >
       {!multiline ? (
         <input
+          disabled={disabled}
           autoFocus={autofocus}
           type={type}
           name={name}
@@ -38,6 +41,7 @@ const index = ({
         />
       ) : (
         <textarea
+          disabled={disabled}
           rows={contentsize ? undefined : 5}
           autoFocus={autofocus}
           name={name}

@@ -13,9 +13,9 @@ const Spinner = ({
 }) => {
   return (
     <svg
-      className={`animate-spin ${pulse ? "animate-pulse " : ""}-ml-1 mr-3 ${
-        size === "normal" ? "h-5 w-5" : "h-7 w-7"
-      } ${color} ${className}`}
+      className={`animate-spin ${pulse ? "animate-pulse " : ""}-ml-1${
+        !className.includes("mr") ? " mr-3" : ""
+      } ${size === "normal" ? "h-5 w-5" : "h-7 w-7"} ${color} ${className}`}
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"

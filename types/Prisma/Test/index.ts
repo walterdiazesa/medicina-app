@@ -1,5 +1,6 @@
 import { Lab } from "../Lab";
 import { Patient } from "../Patient";
+import { User } from "../User";
 
 export interface TestItem {
   name: string;
@@ -12,6 +13,8 @@ export interface Test {
   id?: string;
   labId: string;
   lab?: Lab;
+  issuerId: string;
+  issuer: User;
   patientId: string;
   patient?: Patient;
   sex: "Masculino" | "Femenino" | "No especificado";

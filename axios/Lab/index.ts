@@ -1,5 +1,5 @@
 import { api } from "..";
-import { Lab } from "../../types/Prisma";
+import { Lab, UserType } from "../../types/Prisma";
 import qs from "qs";
 
 export const getLaboratories = async ({ fields }: { fields?: Object }) => {
@@ -21,4 +21,31 @@ export const createLaboratory = async (labFields: Object) => {
     }
   );
   return { created: status === 201, data };
+};
+
+export const patchUsers = async (
+  body: { labId: string; user: string },
+  type?: "INVITE"
+) => {
+  const { status, data } = await api.patch(
+    "/labs/users",
+    { ...body, type },
+    {
+      withCredentials: true,
+    }
+  );
+  return type
+    ? (data as { hash: string; length: number } | UserType)
+    : (data as boolean);
+};
+
+export const updateOwner = async (body: {
+  labId: string;
+  owner: string;
+  type: "ADD" | "REMOVE";
+}) => {
+  const { status, data } = await api.patch("/labs/owners", body, {
+    withCredentials: true,
+  });
+  return data as boolean;
 };

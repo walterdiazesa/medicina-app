@@ -6,6 +6,7 @@ import {
   LoginIcon,
   LogoutIcon,
   MenuIcon,
+  OfficeBuildingIcon,
   SearchIcon,
   UserCircleIcon,
   UserIcon,
@@ -155,6 +156,18 @@ const index = ({
                                   </a>
                                 </Link>
                               </Menu.Button>
+                              {isAuth["sub-lab"] && (
+                                <Menu.Button as="div">
+                                  <Link href="/lab">
+                                    <a className="hover:bg-gray-200 cursor-pointer flex px-4 py-2 text-sm text-gray-500 items-center">
+                                      <OfficeBuildingIcon className="w-4 h-4 mr-1.5" />
+                                      <span className="transform translate-y-1.4px">
+                                        Mi laboratorio
+                                      </span>
+                                    </a>
+                                  </Link>
+                                </Menu.Button>
+                              )}
                               <Menu.Item>
                                 <a
                                   className="hover:bg-gray-200 cursor-pointer flex px-4 py-2 text-sm text-gray-500 items-center"

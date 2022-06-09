@@ -4,6 +4,7 @@ import { GetStaticProps } from "next";
 import { useRouter } from "next/router";
 import { get, isTestAuthorized, put } from "../../../axios/Test";
 import { create, get as getPatient } from "../../../axios/Patient";
+import { get as getEmployee } from "../../../axios/User";
 import { Test } from "../../../types/Prisma/Test";
 import { Save, Spinner } from "../../../components/Icons";
 import {
@@ -33,6 +34,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState<boolean>();
 
+  //#region TestPatient
   const [isPatientLoading, setPatientLoading] = useState(false);
   const [patients, setPatients] = useState<SearchListItem[]>([]);
   const savePatient = useRef("");
@@ -57,7 +59,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
         setPatientLoading(false);
       });
     }, 1500),
-    []
+    [test]
   );
 
   const onChangePatientQuery = (patientQuery: string) => {
@@ -65,6 +67,38 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
     newPatientQuery.current = patientQuery;
     updatePatientQuery(patientQuery);
   };
+  //#endregion
+
+  //#region TestTester
+  const [isTesterLoading, setTesterLoading] = useState(false);
+  const [testers, setTesters] = useState<SearchListItem[]>([]);
+  const saveTester = useRef("");
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const updateTesterQuery = useCallback(
+    debounce((query: string) => {
+      if (!query || !test) return setTesters([]), setTesterLoading(false);
+      getEmployee(test.labId!, query).then((AppEmployee) => {
+        if (!AppEmployee) return setTesters([]), setTesterLoading(false);
+        const _testers: typeof testers = [];
+        for (const tester of AppEmployee) {
+          _testers.push({
+            value: tester.id,
+            text: `${tester.slug}, ${tester.name}, ${tester.email}`,
+          });
+        }
+        setTesters(_testers);
+        setTesterLoading(false);
+      });
+    }, 1500),
+    [test]
+  );
+
+  const onChangeTesterQuery = (testerQuery: string) => {
+    setTesterLoading(true);
+    updateTesterQuery(testerQuery);
+  };
+  //#endregion
 
   useEffect(() => {
     if (auth && test) {
@@ -176,6 +210,55 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
             <p>{test.lab.publicEmail}</p>
             <p>{test.lab.publicPhone}</p>
             {test.lab.web && <p>{test.lab.web}</p>}
+          </div>
+        )}
+        {!test.issuer ? (
+          <div>
+            <p className="text-gray-800">Tester:</p>
+            <div className="flex w-full items-center mb-2">
+              <SearchList
+                list={testers}
+                placeholder="Busca por algún identificador del empleado"
+                className="z-3 w-full"
+                onQueryChange={onChangeTesterQuery}
+                loading={isTesterLoading}
+                onChange={(_tester) =>
+                  (saveTester.current = _tester.value.toString())
+                }
+              />
+              <Save
+                onClick={async () => {
+                  if (!saveTester.current || saveTester.current === "-1")
+                    return alert("Necesitas seleccionar un tester");
+                  const { status, testData } = await put(test.id!, {
+                    issuerId: saveTester.current,
+                  });
+                  if (testData instanceof ResponseError)
+                    return alert(JSON.stringify(testData));
+                  test.issuer = testData!.issuer;
+                  setTesters([]); // just for forceRerender
+                }}
+                className="w-5 h-5 ml-3 fill-gray-500 hover:fill-teal-500 cursor-pointer"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="my-2 text-center">
+            {test.issuer.profileImg && (
+              <div className="px-4 my-3 max-w-sm h-auto mx-auto">
+                <Image
+                  src={test.issuer.profileImg}
+                  alt="profile_image_tester"
+                  priority
+                  width={300}
+                  height={300}
+                />
+              </div>
+            )}
+            <p className="text-gray-800 font-bold">Información del tester</p>
+            <p>{test.issuer.name}</p>
+            <p>{test.issuer.email}</p>
+            <p>{test.issuer.slug}</p>
           </div>
         )}
         {!test.patient ? (
