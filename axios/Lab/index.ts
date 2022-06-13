@@ -1,6 +1,7 @@
 import { api } from "..";
 import { Lab, UserType } from "../../types/Prisma";
 import qs from "qs";
+import { ResponseError } from "../../types/Responses";
 
 export const getLaboratories = async ({ fields }: { fields?: Object }) => {
   const { status, data } = await api.get("/labs", {
@@ -34,9 +35,8 @@ export const patchUsers = async (
       withCredentials: true,
     }
   );
-  return type
-    ? (data as { hash: string; length: number } | UserType)
-    : (data as boolean);
+  if (status !== 200) return data as ResponseError;
+  return type ? (data as UserType) : (data as boolean);
 };
 
 export const updateOwner = async (body: {
@@ -47,5 +47,5 @@ export const updateOwner = async (body: {
   const { status, data } = await api.patch("/labs/owners", body, {
     withCredentials: true,
   });
-  return data as boolean;
+  return status === 200 ? (data as boolean) : (data as ResponseError);
 };

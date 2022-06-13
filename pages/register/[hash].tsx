@@ -38,6 +38,8 @@ const RegisterByInvite = ({
     Invitation | InvalidInvitation
   >();
 
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+
   useEffect(() => {
     if (hash)
       axios
@@ -108,11 +110,15 @@ const RegisterByInvite = ({
             (isInvalidForm as { field: HTMLInputElement }).field.focus();
             return alert("No puedes dejar ningún campo vacío");
           }
+          setLoadingSubmit(true);
           const data = await create(hash as string, {
             name: userFields["name"].toString(),
             password: userFields["password"].toString(),
           });
-          if (data instanceof ResponseError) return alert(JSON.stringify(data));
+          if (data instanceof ResponseError) {
+            setLoadingSubmit(false);
+            return alert(JSON.stringify(data));
+          }
           const auth = await tryAuth();
           setAuth(auth);
         }}
@@ -131,8 +137,16 @@ const RegisterByInvite = ({
           className="max-w-xl my-2"
           icon={<KeyIcon className="text-gray-400 h-5 w-5" />}
         />
-        <ButtonWithIcon text="Registrar" className="w-full mt-2 md:max-w-xl">
-          <UserIcon className="text-white h-5 w-5" />
+        <ButtonWithIcon
+          text={loadingSubmit ? "Creando cuenta" : "Registrar"}
+          disabled={loadingSubmit}
+          className="w-full mt-2 md:max-w-xl"
+        >
+          {loadingSubmit ? (
+            <Spinner className="mr-1" />
+          ) : (
+            <UserIcon className="text-white h-5 w-5" />
+          )}
         </ButtonWithIcon>
       </form>
     </div>

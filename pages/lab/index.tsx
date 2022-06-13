@@ -17,6 +17,7 @@ import { EmployeeCard } from "../../components/Card";
 import { Spinner } from "../../components/Icons";
 import { Auth } from "../../types/Auth";
 import { User, UserType } from "../../types/Prisma";
+import { ResponseError } from "../../types/Responses";
 
 const index = ({ auth }: { auth: Auth }) => {
   const [employees, setEmployees] = useState<UserType[] | null>();
@@ -61,10 +62,23 @@ const index = ({ auth }: { auth: Auth }) => {
                 return alert(
                   "No puedes dejar el correo del empleado a invitar vacío"
                 );
+
+              const alreadyInLab = employees.findIndex(
+                ({ email }) => email === emailInput.value.trim()
+              );
+              if (alreadyInLab !== -1) {
+                alert(
+                  `El empleado con correo "${emailInput.value.trim()}" ya forma parte de este laboratorio`
+                );
+                emailInput.value = "";
+                setTimeout(() => emailInput.focus(), 0);
+                return;
+              }
+
               setLoadingInviteEmployee(true);
               const data = await inviteUser(
                 {
-                  user: emailInput.value,
+                  user: emailInput.value.trim(),
                   labId: auth!["sub-lab"]!,
                 },
                 "INVITE"
@@ -78,10 +92,22 @@ const index = ({ auth }: { auth: Auth }) => {
                 });
               } else {
                 // Invite from mail
-                console.log(data);
+                if (data.hasOwnProperty("error")) {
+                  if ((data as ResponseError)["error"].key === "redundant") {
+                    alert(
+                      `El empleado con correo "${emailInput.value.trim()}" ya forma parte de este laboratorio`
+                    );
+                  } else {
+                    alert(JSON.stringify(data));
+                  }
+                } else {
+                  alert(
+                    `Se ha enviado una invitación al correo "${emailInput.value.trim()}"`
+                  );
+                }
               }
               emailInput.value = "";
-              emailInput.focus();
+              setTimeout(() => emailInput.focus(), 0);
               setLoadingInviteEmployee(false);
             }}
             disabled={loadingInviteEmployee}
