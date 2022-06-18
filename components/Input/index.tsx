@@ -11,6 +11,7 @@ const index = ({
   autofocus = undefined,
   contentsize = undefined,
   disabled,
+  rows,
 }: {
   icon?: JSX.Element;
   placeholder: string;
@@ -21,8 +22,11 @@ const index = ({
   autofocus?: boolean;
   disabled?: boolean;
 } & (
-  | { multiline?: undefined; contentsize?: undefined }
-  | { multiline: true; contentsize?: true }
+  | { multiline?: undefined; contentsize?: undefined; rows?: undefined }
+  | ({ multiline: true } & (
+      | { contentsize?: true; rows?: undefined }
+      | { rows: number; contentsize?: undefined }
+    ))
 )) => {
   return (
     <div
@@ -42,7 +46,7 @@ const index = ({
       ) : (
         <textarea
           disabled={disabled}
-          rows={contentsize ? undefined : 5}
+          rows={(contentsize && undefined) || rows || 5}
           autoFocus={autofocus}
           name={name}
           defaultValue={defaultValue}

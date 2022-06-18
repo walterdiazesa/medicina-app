@@ -80,7 +80,7 @@ const index = ({
         }}
       >
         {label && <Combobox.Label>{label}</Combobox.Label>}
-        <div className="relative mt-1">
+        <div className="relative">
           <div className="relative w-full cursor-default rounded-lg bg-white text-left border-2 border-gray focus:border-gray-600 focus:border-opacity-40 focus:outline-none sm:text-sm">
             <Combobox.Input
               /* as="input" */

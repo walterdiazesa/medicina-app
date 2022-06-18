@@ -8,18 +8,27 @@ import { get as getEmployee } from "../../../axios/User";
 import { Test } from "../../../types/Prisma/Test";
 import { Save, Spinner } from "../../../components/Icons";
 import {
+  AnnotationIcon,
+  BadgeCheckIcon,
   DocumentDownloadIcon,
   DocumentReportIcon,
   DocumentTextIcon,
+  TrashIcon,
   XCircleIcon,
 } from "@heroicons/react/outline";
 import { Document, Preview } from "../../../components/PDF";
 // @ts-ignore
 import { usePDF } from "@react-pdf/renderer/lib/react-pdf.browser.cjs";
 import { Auth } from "../../../types/Auth";
-import Image from "next/image";
+import NextImage from "next/image";
 import { getTestItemName } from "../../../types/Test";
-import { Modal, PatientModal, SearchList } from "../../../components";
+import {
+  ButtonWithIcon,
+  Input,
+  Modal,
+  PatientModal,
+  SearchList,
+} from "../../../components";
 import { debounce } from "../../../utils";
 import { ResponseError } from "../../../types/Responses";
 import { Patient } from "../../../types/Prisma";
@@ -33,6 +42,15 @@ type SearchListItem = {
 const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   const router = useRouter();
   const [isAuthorized, setIsAuthorized] = useState<boolean>();
+  const [pdfState, updateState] = React.useState<number>();
+  const forceUpdate = React.useCallback(() => updateState(Math.random()), []);
+
+  const [labImgJpg, setLabImgJpg] = useState("");
+
+  const [updatingRemarkLoading, setUpdatingRemarkLoading] = useState(false);
+  const [deletingRemarkLoading, setDeletingRemarkLoading] = useState(false);
+
+  const [sendingValidatorLoading, setSendingValidatorLoading] = useState(false);
 
   //#region TestPatient
   const [isPatientLoading, setPatientLoading] = useState(false);
@@ -100,6 +118,37 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   };
   //#endregion
 
+  //#region TestValidator
+  const [isValidatorLoading, setValidatorLoading] = useState(false);
+  const [validators, setValidators] = useState<SearchListItem[]>([]);
+  const saveValidator = useRef("");
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const updateValidatorQuery = useCallback(
+    debounce((query: string) => {
+      if (!query || !test) return setValidators([]), setValidatorLoading(false);
+      getEmployee(test.labId!, query).then((AppEmployee) => {
+        if (!AppEmployee) return setValidators([]), setValidatorLoading(false);
+        const _validators: typeof validators = [];
+        for (const validator of AppEmployee) {
+          _validators.push({
+            value: validator.id,
+            text: `${validator.slug}, ${validator.name}, ${validator.email}`,
+          });
+        }
+        setValidators(_validators);
+        setValidatorLoading(false);
+      });
+    }, 1500),
+    [test]
+  );
+
+  const onChangeValidatorQuery = (validatorQuery: string) => {
+    setValidatorLoading(true);
+    updateValidatorQuery(validatorQuery);
+  };
+  //#endregion
+
   useEffect(() => {
     if (auth && test) {
       isTestAuthorized(test.id!).then((authorized) =>
@@ -108,9 +157,41 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
     }
   }, [auth, test]);
 
-  const [testPDF, _] = usePDF({
-    document: test ? <Document test={test} /> : <></>,
+  const [testPDF, updatePDF] = usePDF({
+    document:
+      test && test.lab && test.patient && labImgJpg ? (
+        <Document test={test!} labImg={labImgJpg} />
+      ) : (
+        <></>
+      ),
   });
+
+  useEffect(() => {
+    if (!test) return;
+    if (labImgJpg) return updatePDF();
+    const image = new Image();
+
+    image.onload = function () {
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0);
+      }
+      //console.log("webptoJpg", canvas.toDataURL("image/jpeg"));
+      // setLabImgJpg(canvas.toDataURL());
+      // setLabImgJpg(canvas.toDataURL("image/png", 1));
+      setLabImgJpg(canvas.toDataURL("image/jpeg", 1));
+    };
+
+    image.src = `/_next/image?url=${encodeURIComponent(
+      test.lab!.img
+    )}&w=750&q=75`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [test, labImgJpg, pdfState]);
 
   if (isAuthorized === undefined)
     return (
@@ -177,7 +258,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
       >
         <PatientModal type="create" fromQuery={newPatientQuery.current} />
       </Modal>
-      <div className="text-center mt-8">
+      <div className={`text-center my-8 ${!test.validator && "mb-16"}`}>
         <h1 className="text-xl text-gray-800">
           Test: <span className="font-bold">{test.id!}</span>
         </h1>
@@ -194,7 +275,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
         ) : (
           <div className="my-2 text-center">
             <div className="px-4 my-3 max-w-sm h-auto mx-auto">
-              <Image
+              <NextImage
                 src={test.lab.img}
                 alt="image_lab"
                 priority
@@ -236,7 +317,8 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                   if (testData instanceof ResponseError)
                     return alert(JSON.stringify(testData));
                   test.issuer = testData!.issuer;
-                  setTesters([]); // just for forceRerender
+                  forceUpdate();
+                  //setTesters([]); // just for forceRerender
                 }}
                 className="w-5 h-5 ml-3 fill-gray-500 hover:fill-teal-500 cursor-pointer"
               />
@@ -246,7 +328,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
           <div className="my-2 text-center">
             {test.issuer.profileImg && (
               <div className="px-4 my-3 max-w-sm h-auto mx-auto">
-                <Image
+                <NextImage
                   src={test.issuer.profileImg}
                   alt="profile_image_tester"
                   priority
@@ -288,7 +370,8 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                   if (testData instanceof ResponseError)
                     return alert(JSON.stringify(testData));
                   test.patient = testData?.patient;
-                  setPatients([]); // just for forceRerender
+                  forceUpdate();
+                  //setPatients([]); // just for forceRerender
                 }}
                 className="w-5 h-5 ml-3 fill-gray-500 hover:fill-teal-500 cursor-pointer"
               />
@@ -317,56 +400,217 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
               : `(${item.range.item}) ${item.range.between.from} - ${item.range.between.to}`}
           </p>
         ))}
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const form = e.target as HTMLFormElement;
+            const formData = new FormData(form);
+            const remarkInput = form.querySelector(
+              `[name="remark"]`
+            ) as HTMLInputElement;
+            if (
+              !formData.has("remark") ||
+              !formData.get("remark")!.toString().trim()
+            ) {
+              alert(
+                "Si quieres asignar una observación para este test, debes de escribir al menos una observación corta."
+              );
+              return remarkInput.focus();
+            }
+            setUpdatingRemarkLoading(true);
+            const { status, testData } = await put(test.id!, {
+              remark: {
+                text: formData.get("remark")!.toString(),
+                by: auth!.sub,
+              },
+            });
+            setUpdatingRemarkLoading(false);
+            if (testData instanceof ResponseError)
+              return alert(JSON.stringify(testData));
+            test.remark = testData?.remark;
+            remarkInput.value = "";
+            forceUpdate();
+            remarkInput.focus();
+          }}
+          className="my-1 w-full text-center"
+        >
+          {test.remark && (
+            <p className="font-bold text-gray-800 mb-1">
+              Observaciones:{" "}
+              <span className="font-normal">
+                {test.remark.text}{" "}
+                <span className="text-gray-400">
+                  (Observación hecha por: {test.remark.by})
+                </span>
+              </span>
+            </p>
+          )}
+          <div className="sm:flex items-center justify-center">
+            <Input
+              type="text"
+              name="remark"
+              placeholder={
+                test.remark
+                  ? "Sobreescriba la observación actual"
+                  : "Escriba una observación para este test (opcional)"
+              }
+              multiline
+              rows={3}
+              className="max-w-xl mr-2"
+              icon={<AnnotationIcon className="text-gray-400 h-5 w-5" />}
+            />
+            <div className="grid content-center">
+              <ButtonWithIcon
+                text={`${
+                  updatingRemarkLoading ? "Guardando" : "Guardar"
+                } observación`}
+                className={`py-1 font-semibold w-full sm:w-auto`}
+                disabled={deletingRemarkLoading || updatingRemarkLoading}
+              >
+                {updatingRemarkLoading ? (
+                  <Spinner className="mr-1" />
+                ) : (
+                  <Save className="w-5 h-5 fill-white" />
+                )}
+              </ButtonWithIcon>
+              {test.remark && (
+                <ButtonWithIcon
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    setDeletingRemarkLoading(true);
+                    const { status, testData } = await put(test.id!, {
+                      remark: null,
+                    });
+                    setDeletingRemarkLoading(false);
+                    if (testData instanceof ResponseError)
+                      return alert(JSON.stringify(testData));
+                    test.remark = testData?.remark;
+                    forceUpdate();
+                  }}
+                  text={`${
+                    deletingRemarkLoading ? "Eliminando" : "Eliminar"
+                  } observación para este test`}
+                  className={`mt-1 py-1 bg-red-500 border-red-300 ${
+                    deletingRemarkLoading || updatingRemarkLoading
+                      ? ""
+                      : "hover:bg-red-900 hover:border-red-500"
+                  } font-semibold w-full sm:w-auto`}
+                  disabled={deletingRemarkLoading || updatingRemarkLoading}
+                >
+                  {deletingRemarkLoading ? (
+                    <Spinner className="mr-1" />
+                  ) : (
+                    <TrashIcon className="w-5 h-5 text-white" />
+                  )}
+                </ButtonWithIcon>
+              )}
+            </div>
+          </div>
+        </form>
+        <div className="my-2">
+          <div className="block sm:flex w-full items-center">
+            <SearchList
+              list={validators}
+              placeholder="Busca por algún identificador del empleado"
+              className="z-3 w-full"
+              onQueryChange={onChangeValidatorQuery}
+              loading={isValidatorLoading}
+              onChange={(_validator) =>
+                (saveValidator.current = _validator.value.toString())
+              }
+            />
+            {/* <Save
+              onClick={async () => {
+                if (!saveTester.current || saveTester.current === "-1")
+                  return alert("Necesitas seleccionar un tester");
+                const { status, testData } = await put(test.id!, {
+                  issuerId: saveTester.current,
+                });
+                if (testData instanceof ResponseError)
+                  return alert(JSON.stringify(testData));
+                test.issuer = testData!.issuer;
+                forceUpdate();
+                //setTesters([]); // just for forceRerender
+              }}
+              className="w-5 h-5 ml-3 fill-gray-500 hover:fill-teal-500 cursor-pointer"
+            /> */}
+            <ButtonWithIcon
+              onClick={async (e) => {
+                e.preventDefault();
+                if (!saveValidator.current || saveValidator.current === "-1")
+                  return alert("Necesitas seleccionar un validador");
+                setSendingValidatorLoading(true);
+                const { status, testData } = await put(test.id!, {
+                  remark: null,
+                });
+                setSendingValidatorLoading(false);
+                if (testData instanceof ResponseError)
+                  return alert(JSON.stringify(testData));
+                test.remark = testData?.remark;
+                forceUpdate();
+              }}
+              text={`${
+                sendingValidatorLoading ? "Enviando" : "Enviar"
+              } a validación`}
+              className={`mt-1 sm:mt-0 sm:ml-2 py-1 font-semibold min-w-max w-full sm:w-max`}
+              disabled={sendingValidatorLoading}
+            >
+              {sendingValidatorLoading ? (
+                <Spinner className="mr-1" />
+              ) : (
+                <BadgeCheckIcon className="w-5 h-5 text-white" />
+              )}
+            </ButtonWithIcon>
+          </div>
+        </div>
         <div className="flex flex-col sm:flex-row justify-center text-center">
-          <button
-            className={`w-1/2 sm:w-auto mx-auto sm:mx-0 rounded-sm bg-red-500${
-              !!(testPDF.loading || testPDF.error)
-                ? ""
-                : " hover:bg-red-700 hover:scale-105"
-            } px-6 py-2 shadow-md my-2 transition duration-100 flex items-center text-white`}
-            disabled={testPDF.loading || !!testPDF.error}
-            onClick={() => {
-              if (testPDF.loading || !!testPDF.error) return;
-              const a = document.createElement("a");
-              a.href = testPDF.url!;
-              a.download = test.id!;
-              document.body.appendChild(a);
-              a.click();
-              document.body.removeChild(a);
-            }}
-          >
-            {testPDF.loading ? (
-              <div className="animate-pulse flex items-center">
-                <Spinner pulse /> Generando...
-              </div>
-            ) : testPDF.error ? (
-              <>
-                <XCircleIcon className="h-6 w-6 mr-2" />
-                {testPDF.error.substring(0, 20)}
-              </>
-            ) : (
-              <>
-                {/* <a href={testPDF.url} target="_blank" rel="noreferrer">
-                Preview
-              </a> */}
-                <DocumentDownloadIcon className="h-6 w-6 mr-2 text-white" />
-                Download PDF
-              </>
-            )}
-          </button>
-          {/* <button className="w-1/2 sm:w-auto mx-auto sm:mx-4 rounded-sm bg-green-700 hover:bg-green-900 px-6 py-2 shadow-md my-2 hover:scale-105 transition duration-100 flex items-center text-white">
-            <DocumentReportIcon className="h-6 w-6 mr-2 text-white" />
-            Download Excel
-          </button>
-          <button className="w-1/2 sm:w-auto mx-auto sm:mx-0 rounded-sm bg-blue-500 hover:bg-blue-700 px-6 py-2 shadow-md my-2 hover:scale-105 transition duration-100 flex items-center text-white">
-            <DocumentTextIcon className="h-6 w-6 mr-2 text-white" />
-            Download Word
-          </button> */}
+          {!test.patient ? (
+            <p>
+              <span className="text-red-500 font-bold mr-1">*</span>
+              Necesitas definir el{" "}
+              <span className="text-teal-500 font-semibold">paciente</span> para
+              poder generar el pdf
+            </p>
+          ) : (
+            <button
+              className={`w-1/2 sm:w-auto mx-auto sm:mx-0 rounded-sm bg-red-500${
+                !!(testPDF.loading || !labImgJpg || !test || testPDF.error)
+                  ? ""
+                  : " hover:bg-red-700 hover:scale-105"
+              } px-6 py-2 shadow-md my-2 transition duration-100 flex items-center text-white`}
+              disabled={
+                testPDF.loading || !labImgJpg || !test || !!testPDF.error
+              }
+              onClick={() => {
+                if (testPDF.loading || !labImgJpg || !test || !!testPDF.error)
+                  return;
+                const a = document.createElement("a");
+                a.href = testPDF.url!;
+                a.download = test.id!;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+              }}
+            >
+              {testPDF.loading || !labImgJpg || !test ? (
+                <div className="animate-pulse flex items-center">
+                  <Spinner pulse /> Generando...
+                </div>
+              ) : testPDF.error ? (
+                <>
+                  <XCircleIcon className="h-6 w-6 mr-2" />
+                  {testPDF.error.substring(0, 20)}
+                </>
+              ) : (
+                <>
+                  <DocumentDownloadIcon className="h-6 w-6 mr-2 text-white" />
+                  Download PDF
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
-      {/* <div className="flex justify-center mt-8">
-        <Preview test={test} />
-      </div> */}
     </>
   );
 };

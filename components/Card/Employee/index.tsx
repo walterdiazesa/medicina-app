@@ -7,20 +7,20 @@ import {
 import React, { useState } from "react";
 import { ButtonWithIcon } from "../..";
 import { patchUsers as removeUser, updateOwner } from "../../../axios/Lab";
-import { UserType } from "../../../types/Prisma";
+import { LabWithEmployeeInfo, UserType } from "../../../types/Prisma";
 import { Spinner } from "../../Icons";
 
 const index = ({
   user,
   labId,
   index,
-  setEmployees,
+  setLabInfo,
 }: {
   user: UserType;
   labId: string;
   index: number;
-  setEmployees: React.Dispatch<
-    React.SetStateAction<UserType[] | null | undefined>
+  setLabInfo: React.Dispatch<
+    React.SetStateAction<LabWithEmployeeInfo[] | null | undefined>
   >;
 }) => {
   const { id, name, slug, email, profileImg, owner } = user;
@@ -50,12 +50,11 @@ const index = ({
               type: owner ? "REMOVE" : "ADD",
             }).then((response) => {
               if (!response) return alert("No se pudo actualizar los roles");
-              setEmployees((_employees) => {
-                if (!_employees) return _employees;
-                const listEmployees = [..._employees];
-                if (owner) listEmployees[index].owner = false;
-                else listEmployees[index].owner = true;
-                return listEmployees;
+              setLabInfo((_labInfo) => {
+                const _labs = [..._labInfo!];
+                const labIdx = _labs.findIndex((lab) => lab.id === labId);
+                _labs[labIdx].employees[index].owner = !owner;
+                return _labs;
               });
               setLoadingEmployeeRole(false);
             });
@@ -87,11 +86,11 @@ const index = ({
               user: id,
             }).then((response) => {
               if (!response) return alert("No se pudo eliminar al empleado");
-              setEmployees((_employees) => {
-                if (!_employees) return _employees;
-                const listEmployees = [..._employees];
-                listEmployees.splice(index, 1);
-                return listEmployees;
+              setLabInfo((_labInfo) => {
+                const _labs = [..._labInfo!];
+                const labIdx = _labs.findIndex((lab) => lab.id === labId);
+                _labs[labIdx].employees.splice(index, 1);
+                return _labs;
               });
               setLoadingEmployeeDeleting(false);
             });

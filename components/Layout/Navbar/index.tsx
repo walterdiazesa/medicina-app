@@ -14,13 +14,14 @@ import {
 } from "@heroicons/react/outline";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { ButtonWithIcon, Transition } from "../..";
 import Image from "next/image";
 import { login, logout } from "../../../axios/Auth";
 import { Auth } from "../../../types/Auth";
 import { ResponseError } from "../../../types/Responses";
 import { Informacion } from "./Item";
+import { me } from "../../../axios/User";
 
 const index = ({
   isAuth,
@@ -127,15 +128,25 @@ const index = ({
                       {({ open }) => (
                         <>
                           <div>
-                            <Menu.Button className="bg-gray-800 flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                            <Menu.Button
+                              className={`${
+                                isAuth.img
+                                  ? "ring-2 ring-offset-2 ring-offset-teal-500 ring-white bg-white"
+                                  : "bg-gray-800"
+                              } flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white`}
+                            >
                               <span className="sr-only">Open user menu</span>
                               <Image
                                 className="h-8 w-8 rounded-full"
-                                src={`https://avatars.dicebear.com/api/jdenticon/testlaboratory.svg`}
+                                src={
+                                  isAuth.img ||
+                                  `https://avatars.dicebear.com/api/jdenticon/${isAuth["sub"]}.svg`
+                                }
                                 alt="profile"
                                 width={32}
                                 height={32}
                                 layout="fixed"
+                                {...(isAuth.img && { objectFit: "scale-down" })}
                                 priority
                                 quality={100}
                               />
@@ -156,7 +167,7 @@ const index = ({
                                   </a>
                                 </Link>
                               </Menu.Button>
-                              {isAuth["sub-lab"] && (
+                              {isAuth["sub-lab"].length && (
                                 <Menu.Button as="div">
                                   <Link href="/lab">
                                     <a className="hover:bg-gray-200 cursor-pointer flex px-4 py-2 text-sm text-gray-500 items-center">

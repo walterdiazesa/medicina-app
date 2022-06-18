@@ -1,7 +1,27 @@
 import { api } from "..";
-import { Lab, UserType } from "../../types/Prisma";
+import { Lab, LabWithEmployeeInfo, UserType } from "../../types/Prisma";
 import qs from "qs";
 import { ResponseError } from "../../types/Responses";
+
+export const mine = async (includeEmployeeInfo?: boolean) => {
+  const { status, data } = await api.get("/labs/mine", {
+    withCredentials: true,
+    ...(includeEmployeeInfo && {
+      params: {
+        includeEmployeeInfo,
+      },
+    }),
+  });
+  if (status !== 200) return null;
+  return data as LabWithEmployeeInfo | LabWithEmployeeInfo[];
+};
+
+export async function updateLab(labId: string, body: Partial<Lab>) {
+  const { status, data } = await api.patch(`/labs/${labId}`, body, {
+    withCredentials: true,
+  });
+  return status === 200 ? (data as Lab) : new ResponseError(data);
+}
 
 export const getLaboratories = async ({ fields }: { fields?: Object }) => {
   const { status, data } = await api.get("/labs", {

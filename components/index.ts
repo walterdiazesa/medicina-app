@@ -7,6 +7,7 @@ import Gender from "./Input/Gender";
 import SearchList from "./SearchList";
 import Modal from "./Modal";
 import DatePicker from "./DatePicker";
+import Attachment from "./Attachment";
 import PatientModal from "./Modal/Patient";
 
 export {
@@ -20,4 +21,5 @@ export {
   Modal,
   DatePicker,
   PatientModal,
+  Attachment,
 };

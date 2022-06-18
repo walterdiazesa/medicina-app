@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/alt-text */
 // @ts-nocheck
-import React from "react";
+import React, { useEffect } from "react";
 import { Test } from "../../../types/Prisma/Test";
 import { getTestItemName } from "../../../types/Test";
 import {
@@ -85,7 +85,7 @@ const ReportItem = ({
   );
 };
 
-const Document = ({ test }: { test: Test }) => {
+const Document = ({ test, labImg }: { test: Test; labImg: string }) => {
   return (
     <PDFDocument>
       <Page
@@ -109,17 +109,15 @@ const Document = ({ test }: { test: Test }) => {
               flex: 1,
             }}
           >
-            <HeaderItem>
-              44 Avenida Norte, Paseo Gral. Escalón, Edificio clínico n.3425 San
-              Salvador, El Salvador
-            </HeaderItem>
-            <HeaderItem>(503) 2251-6456</HeaderItem>
-            <HeaderItem>
-              <Link src="https://www.testinglaboratorysv.com">
-                www.testinglaboratorysv.com
-              </Link>
-            </HeaderItem>
-            <HeaderItem>contact@testinglaboratory.com.sv</HeaderItem>
+            <HeaderItem>{test.lab!.name}</HeaderItem>
+            <HeaderItem>{test.lab!.address}</HeaderItem>
+            <HeaderItem>{test.lab!.publicPhone}</HeaderItem>
+            {test.lab!.web && (
+              <HeaderItem>
+                <Link src={test.lab!.web}>{test.lab!.web}</Link>
+              </HeaderItem>
+            )}
+            <HeaderItem>{test.lab!.publicEmail}</HeaderItem>
           </View>
           <View
             style={{
@@ -128,7 +126,13 @@ const Document = ({ test }: { test: Test }) => {
             }}
           >
             <View style={{ flexGrow: 1 }} />
-            <Image src="/test-pdf/logo.png" style={{ objectFit: "contain" }} />
+            <Image
+              /* src={`http://localhost:3000/_next/image?url=${
+                test.lab!.img
+              }&w=1920&q=75`} */
+              src={labImg}
+              style={{ objectFit: "contain" }}
+            />
           </View>
         </View>
         <View
@@ -148,9 +152,18 @@ const Document = ({ test }: { test: Test }) => {
         >
           <View style={{ flex: 1 }}>
             <ReportItem element="Solicitud" value={test.id} />
-            <ReportItem element="Paciente" value="@(not implemented)" />
+            <ReportItem element="Paciente" value={test.patient!.name} />
+            <ReportItem element="ID" value={test.patient!.dui} />
             <ReportItem element="Sexo" value={test.sex} />
-            <ReportItem element="Edad" value="@(not implemented)" />
+            <ReportItem
+              element="Edad"
+              value={`${new Date(
+                test.patient!.dateBorn
+              ).toLocaleDateString()} (${new Date(test.patient!.dateBorn).diff(
+                new Date(),
+                "year"
+              )} años)`}
+            />
           </View>
           <View style={{ flex: 1 }}>
             <ReportItem
@@ -158,7 +171,11 @@ const Document = ({ test }: { test: Test }) => {
               value={new Date(test.date).toLocaleString()}
               right
             />
-            <ReportItem element="Creado por" value="@(not implemented)" right />
+            <ReportItem
+              element="Creado por"
+              value={test.issuer?.name || test.lab!.name}
+              right
+            />
             <ReportItem
               element="Fecha y hora de la validación"
               value="@(not implemented)"
@@ -364,6 +381,21 @@ const Document = ({ test }: { test: Test }) => {
           }}
           fixed
         >
+          {test.remark && (
+            <Text
+              render={({ pageNumber, totalPages }) =>
+                pageNumber === totalPages
+                  ? `Observaciones: ${test.remark!.text}`
+                  : ""
+              }
+              style={{
+                fontWeight: 700,
+                fontSize: 7,
+                lineHeight: "0.5mm",
+                marginBottom: "1mm",
+              }}
+            />
+          )}
           <View
             style={{
               display: "flex",

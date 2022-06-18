@@ -2,7 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ["avatars.dicebear.com", "medicina-app.vercel.app"],
+    domains: [
+      "avatars.dicebear.com",
+      "medicina-app.vercel.app",
+      "public-files.s3.filebase.com",
+    ],
   },
 };
 

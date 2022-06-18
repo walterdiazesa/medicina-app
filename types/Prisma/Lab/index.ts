@@ -1,3 +1,5 @@
+import { User, UserType } from "../User";
+
 export type Lab = {
   id: string;
   email: string;
@@ -15,3 +17,8 @@ export type Lab = {
   userIds: string[];
   ownerIds: string[];
 };
+export interface LabWithEmployeeInfo extends Lab {
+  Owners: User[];
+  Users: User[];
+  employees: UserType[];
+}

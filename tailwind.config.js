@@ -16,6 +16,7 @@ module.exports = {
         a4: "29.7cm",
       },
       minHeight: {
+        "4-25": "100px",
         "screen-navbar": "calc(100vh - 4rem)",
       },
       minWidth: {

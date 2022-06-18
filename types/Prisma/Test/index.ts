@@ -14,10 +14,13 @@ export interface Test {
   labId: string;
   lab?: Lab;
   issuerId: string;
-  issuer: User;
+  issuer?: User;
+  validatorId: string | null;
+  validator?: User;
   patientId: string;
   patient?: Patient;
   sex: "Masculino" | "Femenino" | "No especificado";
+  remark?: { text: string; by: string } | null;
   date: Date;
   tests: TestItem[];
 }

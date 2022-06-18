@@ -22,6 +22,21 @@ export async function get(
     : (data as { users: User[]; ownersIds: string[] });
 }
 
+export async function me() {
+  const { status, data } = await api.get("/users/me", {
+    withCredentials: true,
+  });
+  if (status !== 200) return null;
+  return data as User;
+}
+
+export async function updateMe(body: Partial<User>) {
+  const { status, data } = await api.patch("/users/me", body, {
+    withCredentials: true,
+  });
+  return status === 200 ? (data as User) : new ResponseError(data);
+}
+
 export async function create(
   inviteHash: string,
   { name, password, profileImg }: { [key: string]: string }

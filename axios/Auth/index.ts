@@ -28,3 +28,13 @@ export async function login(username: string, password: string) {
 export async function logout() {
   await api.post(`/auth/logout`, {}, { withCredentials: true });
 }
+export async function changePassword(body: {
+  oldPassword: string;
+  newPassword: string;
+}) {
+  const { status, data } = await api.patch("/auth/password/change", body, {
+    withCredentials: true,
+  });
+  if (status !== 200) return new ResponseError(data);
+  return data as boolean;
+}
