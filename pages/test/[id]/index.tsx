@@ -572,6 +572,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                 if (testValidationResponse instanceof ResponseError)
                   return alert(JSON.stringify(testValidationResponse));
                 alert("Se ha notificado al usuario correctamente");
+                // setValidators([]);
               }}
               text={`${
                 sendingValidatorLoading ? "Enviando" : "Enviar"
