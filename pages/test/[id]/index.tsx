@@ -2,7 +2,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { GetStaticProps } from "next";
 import { useRouter } from "next/router";
-import { get, isTestAuthorized, put } from "../../../axios/Test";
+import {
+  get,
+  isTestAuthorized,
+  put,
+  requestValidation,
+} from "../../../axios/Test";
 import { create, get as getPatient } from "../../../axios/Patient";
 import { get as getEmployee } from "../../../axios/User";
 import { Test } from "../../../types/Prisma/Test";
@@ -13,6 +18,7 @@ import {
   DocumentDownloadIcon,
   DocumentReportIcon,
   DocumentTextIcon,
+  ExclamationCircleIcon,
   TrashIcon,
   XCircleIcon,
 } from "@heroicons/react/outline";
@@ -326,6 +332,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
           </div>
         ) : (
           <div className="my-2 text-center">
+            <p className="text-gray-800 font-bold">Información del tester</p>
             {test.issuer.profileImg && (
               <div className="px-4 my-3 max-w-sm h-auto mx-auto">
                 <NextImage
@@ -337,7 +344,6 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                 />
               </div>
             )}
-            <p className="text-gray-800 font-bold">Información del tester</p>
             <p>{test.issuer.name}</p>
             <p>{test.issuer.email}</p>
             <p>{test.issuer.slug}</p>
@@ -507,8 +513,26 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
             </div>
           </div>
         </form>
-        <div className="my-2">
-          <div className="block sm:flex w-full items-center">
+        {test.validator ? (
+          <div className="my-2 text-center">
+            <p className="text-gray-800 font-bold">Validado por</p>
+            {test.validator.profileImg && (
+              <div className="px-4 my-3 max-w-sm h-auto mx-auto">
+                <NextImage
+                  src={test.validator.profileImg}
+                  alt="profile_image_tester"
+                  priority
+                  width={300}
+                  height={300}
+                />
+              </div>
+            )}
+            <p>{test.validator.name}</p>
+            <p>{test.validator.email}</p>
+            <p>{test.validator.slug}</p>
+          </div>
+        ) : (
+          <div className="block sm:flex w-full items-center my-2">
             <SearchList
               list={validators}
               placeholder="Busca por algún identificador del empleado"
@@ -540,14 +564,14 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                 if (!saveValidator.current || saveValidator.current === "-1")
                   return alert("Necesitas seleccionar un validador");
                 setSendingValidatorLoading(true);
-                const { status, testData } = await put(test.id!, {
-                  remark: null,
-                });
+                const testValidationResponse = await requestValidation(
+                  test.id!,
+                  saveValidator.current
+                );
                 setSendingValidatorLoading(false);
-                if (testData instanceof ResponseError)
-                  return alert(JSON.stringify(testData));
-                test.remark = testData?.remark;
-                forceUpdate();
+                if (testValidationResponse instanceof ResponseError)
+                  return alert(JSON.stringify(testValidationResponse));
+                alert("Se ha notificado al usuario correctamente");
               }}
               text={`${
                 sendingValidatorLoading ? "Enviando" : "Enviar"
@@ -562,7 +586,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
               )}
             </ButtonWithIcon>
           </div>
-        </div>
+        )}
         <div className="flex flex-col sm:flex-row justify-center text-center">
           {!test.patient ? (
             <p>

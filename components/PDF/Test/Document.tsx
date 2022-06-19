@@ -178,12 +178,12 @@ const Document = ({ test, labImg }: { test: Test; labImg: string }) => {
             />
             <ReportItem
               element="Fecha y hora de la validación"
-              value="@(not implemented)"
+              value={new Date(test.validated).toLocaleString()}
               right
             />
             <ReportItem
               element="Validado por"
-              value="@(not implemented)"
+              value={test.validator!.name}
               right
             />
           </View>
@@ -434,7 +434,7 @@ const Document = ({ test, labImg }: { test: Test; labImg: string }) => {
               lineHeight: "0.5mm",
             }}
           >
-            Verónica Alejandra Meléndez Valenzuela
+            {test.validator!.name}
           </Text>
           <Text
             style={{

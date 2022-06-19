@@ -17,6 +17,7 @@ export interface Test {
   issuer?: User;
   validatorId: string | null;
   validator?: User;
+  validated: Date;
   patientId: string;
   patient?: Patient;
   sex: "Masculino" | "Femenino" | "No especificado";

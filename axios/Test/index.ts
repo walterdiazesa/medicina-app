@@ -56,3 +56,27 @@ export const put = async (id: string, data: Partial<Test>) => {
     });
   return { status, testData };
 };
+
+export const requestValidation = async (
+  testId: string,
+  validatorId: string
+) => {
+  const response = await api.put(
+    `/test/validation/request/${testId}/${validatorId}`,
+    {},
+    { withCredentials: true }
+  );
+  return response.status !== 200
+    ? new ResponseError(response.data)
+    : (response.data as true);
+};
+export const submitValidation = async (validationHash: string) => {
+  const response = await api.post(
+    `/test/validation/submit/${validationHash}`,
+    {},
+    { withCredentials: true }
+  );
+  return response.status !== 200
+    ? new ResponseError(response.data)
+    : (response.data as true);
+};
