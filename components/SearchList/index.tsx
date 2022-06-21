@@ -33,6 +33,7 @@ const index = ({
   className,
   onCreateClick,
   newAdded,
+  name,
 }: {
   list: Item[];
   defaultValue?: number | string;
@@ -45,6 +46,7 @@ const index = ({
   className?: string;
   onCreateClick?: () => void;
   newAdded?: Item;
+  name?: string;
 }) => {
   const [selectedValue, setSelectedValue] = useState(() => {
     const noItem = { value: -1, text: "" };
@@ -83,6 +85,7 @@ const index = ({
         <div className="relative">
           <div className="relative w-full cursor-default rounded-lg bg-white text-left border-2 border-gray focus:border-gray-600 focus:border-opacity-40 focus:outline-none sm:text-sm">
             <Combobox.Input
+              {...(name && { name })}
               /* as="input" */
               className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-400 focus:outline-none"
               onChange={(event) => {

@@ -13,7 +13,7 @@ type Button = {
   text: string;
 };
 interface SubmitButton extends Button {
-  theme?: "teal" | "red";
+  theme?: "teal" | "red" | "gray";
 }
 
 const Modal = ({
@@ -38,7 +38,7 @@ const Modal = ({
   icon?: "warning" | "info" | "error" | "success" | "question";
   submitCallback?: (args: any) => void;
   disableCloseWhenTouchOutside?: true;
-  requiredItems?: Set<string>;
+  requiredItems?: Set<string> | { items: Set<string>; message?: string };
 } & (
   | { children: JSX.Element; title?: null; desc?: null }
   | { title: string; desc: string; children?: null }
@@ -156,7 +156,9 @@ const Modal = ({
                     className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white ${
                       buttons.submit.theme === "teal"
                         ? "bg-teal-500 hover:bg-teal-400 focus:ring-teal-700"
-                        : "bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                        : buttons.submit.theme === "red"
+                        ? "bg-red-600 hover:bg-red-700 focus:ring-red-500"
+                        : "bg-gray-400 hover:bg-gray-500 focus:ring-gray-400"
                     } focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm`}
                     onClick={() => {
                       const modalForm = document.getElementById(
@@ -165,25 +167,34 @@ const Modal = ({
                       const formData = new FormData(modalForm);
 
                       if (requiredItems) {
+                        let _requiredItems =
+                          requiredItems instanceof Set
+                            ? requiredItems
+                            : requiredItems.items;
                         let isInvalidForm: { field: HTMLInputElement } | false =
                           false;
                         formData.forEach((value, key, field) => {
                           if (isInvalidForm) return;
-                          if (requiredItems.has(key))
+                          if (_requiredItems.has(key))
                             if (!value.toString().trim())
                               return (isInvalidForm = {
                                 field: modalForm.querySelector(
                                   `[name="${key}"]`
                                 )!,
                               });
-                            else requiredItems.delete(key);
+                            else _requiredItems.delete(key);
                         });
-                        if (isInvalidForm || requiredItems.size) {
+                        if (isInvalidForm || _requiredItems.size) {
                           if (isInvalidForm)
                             (
                               isInvalidForm as { field: HTMLInputElement }
                             ).field.focus();
-                          return alert("No puedes dejar ningún campo vacío");
+                          return alert(
+                            requiredItems instanceof Set ||
+                              !requiredItems.message
+                              ? "No puedes dejar ningún campo vacío"
+                              : requiredItems.message
+                          );
                         }
                       }
                       if (submitCallback)

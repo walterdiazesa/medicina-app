@@ -15,11 +15,18 @@ import { Save, Spinner } from "../../../components/Icons";
 import {
   AnnotationIcon,
   BadgeCheckIcon,
+  CakeIcon,
   DocumentDownloadIcon,
   DocumentReportIcon,
   DocumentTextIcon,
   ExclamationCircleIcon,
+  IdentificationIcon,
+  MailIcon,
+  PaperAirplaneIcon,
+  PencilIcon,
+  PhoneIcon,
   TrashIcon,
+  UserIcon,
   XCircleIcon,
 } from "@heroicons/react/outline";
 import { Document, Preview } from "../../../components/PDF";
@@ -38,6 +45,7 @@ import {
 import { debounce } from "../../../utils";
 import { ResponseError } from "../../../types/Responses";
 import { Patient } from "../../../types/Prisma";
+import { Dialog } from "@headlessui/react";
 
 type SearchListItem = {
   value: number | string;
@@ -54,12 +62,14 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   const [labImgJpg, setLabImgJpg] = useState("");
 
   const [updatingRemarkLoading, setUpdatingRemarkLoading] = useState(false);
+  const [isRemarkModalOpen, setRemarkModalOpen] = useState(false);
   const [deletingRemarkLoading, setDeletingRemarkLoading] = useState(false);
 
   const [sendingValidatorLoading, setSendingValidatorLoading] = useState(false);
 
   //#region TestPatient
   const [isPatientLoading, setPatientLoading] = useState(false);
+  const [isPatientSavingLoading, setPatientSavingLoading] = useState(false);
   const [patients, setPatients] = useState<SearchListItem[]>([]);
   const savePatient = useRef("");
   const [isCreatePatientOpen, setIsCreatePatientOpen] = useState(false);
@@ -94,6 +104,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   //#endregion
 
   //#region TestTester
+  const [isTesterModalOpen, setTesterModalOpen] = useState(false);
   const [isTesterLoading, setTesterLoading] = useState(false);
   const [testers, setTesters] = useState<SearchListItem[]>([]);
   const saveTester = useRef("");
@@ -125,6 +136,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   //#endregion
 
   //#region TestValidator
+  const [isValidatorModalOpen, setValidatorModalOpen] = useState(false);
   const [isValidatorLoading, setValidatorLoading] = useState(false);
   const [validators, setValidators] = useState<SearchListItem[]>([]);
   const saveValidator = useRef("");
@@ -187,9 +199,6 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(image, 0, 0);
       }
-      //console.log("webptoJpg", canvas.toDataURL("image/jpeg"));
-      // setLabImgJpg(canvas.toDataURL());
-      // setLabImgJpg(canvas.toDataURL("image/png", 1));
       setLabImgJpg(canvas.toDataURL("image/jpeg", 1));
     };
 
@@ -235,6 +244,59 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   return (
     <>
       <Modal
+        open={isRemarkModalOpen}
+        setOpen={setRemarkModalOpen}
+        buttons={{
+          submit: {
+            text: `${test.remark ? "Sobreescribir" : "Guardar"} observación`,
+            theme: "teal",
+          },
+          cancel: { text: "Cancelar" },
+        }}
+        disableCloseWhenTouchOutside
+        submitCallback={async ({ remark }: { remark: string }) => {
+          setUpdatingRemarkLoading(true);
+          const { status, testData } = await put(test.id!, {
+            remark: {
+              text: remark,
+              by: auth!.sub,
+            },
+          });
+          setUpdatingRemarkLoading(false);
+          if (testData instanceof ResponseError)
+            return alert(JSON.stringify(testData));
+          test.remark = testData?.remark;
+        }}
+        requiredItems={new Set(["remark"])}
+        initialFocus="remark"
+      >
+        <div className="bg-white pt-3 px-4 sm:px-6 rounded-t-lg">
+          <div className="text-center sm:text-left">
+            <div className="mt-2">
+              {test.remark && (
+                <p className="font-bold text-gray-800 mb-2">
+                  Observación actual:
+                  <span className="ml-1 font-normal">
+                    {test.remark.text}{" "}
+                    <span className="text-gray-400">
+                      (Observación hecha por: {test.remark.by})
+                    </span>
+                  </span>
+                </p>
+              )}
+              <Input
+                type="text"
+                name="remark"
+                placeholder="Escriba una observación para este test"
+                multiline
+                rows={3}
+                icon={<AnnotationIcon className="text-gray-400 h-5 w-5" />}
+              />
+            </div>
+          </div>
+        </div>
+      </Modal>
+      <Modal
         open={isCreatePatientOpen}
         setOpen={setIsCreatePatientOpen}
         buttons={{
@@ -264,46 +326,42 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
       >
         <PatientModal type="create" fromQuery={newPatientQuery.current} />
       </Modal>
-      <div className={`text-center my-8 ${!test.validator && "mb-16"}`}>
-        <h1 className="text-xl text-gray-800">
-          Test: <span className="font-bold">{test.id!}</span>
-        </h1>
-        <p className="text-gray-800">
-          Fecha:{" "}
-          <span className="font-bold">
-            {new Date(test.date).toLocaleString()}
-          </span>
-        </p>
-        {!test.lab ? (
-          <p className="text-gray-800">
-            Laboratorio: <span className="font-bold">Ninguno</span>
-          </p>
-        ) : (
-          <div className="my-2 text-center">
-            <div className="px-4 my-3 max-w-sm h-auto mx-auto">
-              <NextImage
-                src={test.lab.img}
-                alt="image_lab"
-                priority
-                width={700}
-                height={200}
+      <Modal
+        open={isTesterModalOpen}
+        setOpen={setTesterModalOpen}
+        buttons={{
+          submit: { text: "Guardar tester", theme: "teal" },
+          cancel: { text: "Cancelar" },
+        }}
+        disableCloseWhenTouchOutside
+        submitCallback={async () => {
+          if (!saveTester.current || saveTester.current === "-1")
+            return alert("Necesitas seleccionar un tester");
+          const { status, testData } = await put(test.id!, {
+            issuerId: saveTester.current,
+          });
+          if (testData instanceof ResponseError)
+            return alert(JSON.stringify(testData));
+          test.issuer = testData!.issuer;
+        }}
+        requiredItems={new Set(["tester"])}
+        initialFocus="tester"
+      >
+        <div className="bg-white pt-6 px-4 sm:px-6 pb-3 rounded-t-lg">
+          <div className="text-center sm:text-left">
+            <Dialog.Title
+              as="h3"
+              className="text-lg leading-6 font-medium text-gray-900 sm:flex items-center block"
+            >
+              <UserIcon
+                className="h-7 w-7 text-gray-500 inline-block sm:block mr-1.5"
+                aria-hidden="true"
               />
-            </div>
-            <p className="text-gray-800 font-bold">
-              Información del laboratorio
-            </p>
-            <p>{test.lab.name}</p>
-            <p>{test.lab.address}</p>
-            <p>{test.lab.publicEmail}</p>
-            <p>{test.lab.publicPhone}</p>
-            {test.lab.web && <p>{test.lab.web}</p>}
-          </div>
-        )}
-        {!test.issuer ? (
-          <div>
-            <p className="text-gray-800">Tester:</p>
-            <div className="flex w-full items-center mb-2">
+              ¿Quién fue la persona que creó este test?
+            </Dialog.Title>
+            <div className="mt-2">
               <SearchList
+                name="tester"
                 list={testers}
                 placeholder="Busca por algún identificador del empleado"
                 className="z-3 w-full"
@@ -313,293 +371,348 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                   (saveTester.current = _tester.value.toString())
                 }
               />
-              <Save
-                onClick={async () => {
-                  if (!saveTester.current || saveTester.current === "-1")
-                    return alert("Necesitas seleccionar un tester");
-                  const { status, testData } = await put(test.id!, {
-                    issuerId: saveTester.current,
-                  });
-                  if (testData instanceof ResponseError)
-                    return alert(JSON.stringify(testData));
-                  test.issuer = testData!.issuer;
-                  forceUpdate();
-                  //setTesters([]); // just for forceRerender
-                }}
-                className="w-5 h-5 ml-3 fill-gray-500 hover:fill-teal-500 cursor-pointer"
-              />
             </div>
           </div>
-        ) : (
-          <div className="my-2 text-center">
-            <p className="text-gray-800 font-bold">Información del tester</p>
-            {test.issuer.profileImg && (
-              <div className="px-4 my-3 max-w-sm h-auto mx-auto">
-                <NextImage
-                  src={test.issuer.profileImg}
-                  alt="profile_image_tester"
-                  priority
-                  width={300}
-                  height={300}
+        </div>
+      </Modal>
+      <Modal
+        open={isValidatorModalOpen}
+        setOpen={setValidatorModalOpen}
+        buttons={{
+          submit: { text: "Cerrar y volver al test" },
+        }}
+        initialFocus="validator"
+      >
+        <div className="bg-white pt-6 px-4 sm:px-6 pb-3 rounded-t-lg">
+          <div className="text-center sm:text-left">
+            <Dialog.Title
+              as="h3"
+              className="text-lg leading-6 font-medium text-gray-900 sm:flex items-center block"
+            >
+              <PaperAirplaneIcon
+                className="h-7 w-7 text-gray-500 inline-block sm:block mr-1.5"
+                aria-hidden="true"
+              />
+              Enviar solicitud para validación
+            </Dialog.Title>
+            <div className="mt-2">
+              <p className="text-gray-400">
+                1- Busca, encuentra y selecciona el empleado al que quieras
+                hacer llegar la solicitud para validar el examen, esta llegará a
+                su correo y lo notificará en la aplicación
+              </p>
+              <p className="text-gray-400">
+                2- Puedes enviar tantas solicitudes a tantos empleados como
+                desees, el primero en validar el test quedará guardado para este
+                test
+              </p>
+              <p className="text-gray-400">
+                3- Una vez el test haya sido validado, no se podrá deshacer esta
+                acción
+              </p>
+              <div className="block sm:flex w-full items-center my-2">
+                <SearchList
+                  name="validator"
+                  list={validators}
+                  placeholder="Busca por algún identificador del empleado"
+                  className="z-3 w-full"
+                  onQueryChange={onChangeValidatorQuery}
+                  loading={isValidatorLoading}
+                  onChange={(_validator) =>
+                    (saveValidator.current = _validator.value.toString())
+                  }
                 />
-              </div>
-            )}
-            <p>{test.issuer.name}</p>
-            <p>{test.issuer.email}</p>
-            <p>{test.issuer.slug}</p>
-          </div>
-        )}
-        {!test.patient ? (
-          <div>
-            <p className="text-gray-800">Paciente:</p>
-            <div className="flex w-full items-center mb-2">
-              <SearchList
-                list={patients}
-                placeholder="Busca por algún identificador del paciente"
-                className="z-3 w-full"
-                addCustom
-                onQueryChange={onChangePatientQuery}
-                loading={isPatientLoading}
-                onChange={(_patient) =>
-                  (savePatient.current = _patient.value.toString())
-                }
-                newAdded={createdNewPatient.current}
-                onCreateClick={() => setIsCreatePatientOpen(true)}
-              />
-              <Save
-                onClick={async () => {
-                  if (!savePatient.current || savePatient.current === "-1")
-                    return alert("Necesitas seleccionar un paciente");
-                  const { status, testData } = await put(test.id!, {
-                    patientId: savePatient.current,
-                  });
-                  if (testData instanceof ResponseError)
-                    return alert(JSON.stringify(testData));
-                  test.patient = testData?.patient;
-                  forceUpdate();
-                  //setPatients([]); // just for forceRerender
-                }}
-                className="w-5 h-5 ml-3 fill-gray-500 hover:fill-teal-500 cursor-pointer"
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="my-2">
-            <p className="text-gray-800 font-bold">Información del paciente</p>
-            <p>{test.patient.name}</p>
-            <p>{test.patient.dui}</p>
-            <p>{test.patient.sex}</p>
-            <p>{new Date(test.patient.dateBorn).toLocaleDateString()}</p>
-            <p>{test.patient.phone}</p>
-            <p>{test.patient.email}</p>
-          </div>
-        )}
-        <p className="text-gray-800">
-          Sexo según Chem: <span className="font-bold">{test.sex}</span>
-        </p>
-        <p className="text-lg font-bold text-gray-800">Tests:</p>
-        {test.tests.map((item) => (
-          <p key={item.name}>
-            {getTestItemName(item.name).name} {item.assign} {item.value}
-            {!item.range
-              ? ""
-              : `(${item.range.item}) ${item.range.between.from} - ${item.range.between.to}`}
-          </p>
-        ))}
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const form = e.target as HTMLFormElement;
-            const formData = new FormData(form);
-            const remarkInput = form.querySelector(
-              `[name="remark"]`
-            ) as HTMLInputElement;
-            if (
-              !formData.has("remark") ||
-              !formData.get("remark")!.toString().trim()
-            ) {
-              alert(
-                "Si quieres asignar una observación para este test, debes de escribir al menos una observación corta."
-              );
-              return remarkInput.focus();
-            }
-            setUpdatingRemarkLoading(true);
-            const { status, testData } = await put(test.id!, {
-              remark: {
-                text: formData.get("remark")!.toString(),
-                by: auth!.sub,
-              },
-            });
-            setUpdatingRemarkLoading(false);
-            if (testData instanceof ResponseError)
-              return alert(JSON.stringify(testData));
-            test.remark = testData?.remark;
-            remarkInput.value = "";
-            forceUpdate();
-            remarkInput.focus();
-          }}
-          className="my-1 w-full text-center"
-        >
-          {test.remark && (
-            <p className="font-bold text-gray-800 mb-1">
-              Observaciones:{" "}
-              <span className="font-normal">
-                {test.remark.text}{" "}
-                <span className="text-gray-400">
-                  (Observación hecha por: {test.remark.by})
-                </span>
-              </span>
-            </p>
-          )}
-          <div className="sm:flex items-center justify-center">
-            <Input
-              type="text"
-              name="remark"
-              placeholder={
-                test.remark
-                  ? "Sobreescriba la observación actual"
-                  : "Escriba una observación para este test (opcional)"
-              }
-              multiline
-              rows={3}
-              className="max-w-xl mr-2"
-              icon={<AnnotationIcon className="text-gray-400 h-5 w-5" />}
-            />
-            <div className="grid content-center">
-              <ButtonWithIcon
-                text={`${
-                  updatingRemarkLoading ? "Guardando" : "Guardar"
-                } observación`}
-                className={`py-1 font-semibold w-full sm:w-auto`}
-                disabled={deletingRemarkLoading || updatingRemarkLoading}
-              >
-                {updatingRemarkLoading ? (
-                  <Spinner className="mr-1" />
-                ) : (
-                  <Save className="w-5 h-5 fill-white" />
-                )}
-              </ButtonWithIcon>
-              {test.remark && (
                 <ButtonWithIcon
                   onClick={async (e) => {
                     e.preventDefault();
-                    setDeletingRemarkLoading(true);
-                    const { status, testData } = await put(test.id!, {
-                      remark: null,
-                    });
-                    setDeletingRemarkLoading(false);
-                    if (testData instanceof ResponseError)
-                      return alert(JSON.stringify(testData));
-                    test.remark = testData?.remark;
-                    forceUpdate();
+                    if (
+                      !saveValidator.current ||
+                      saveValidator.current === "-1"
+                    )
+                      return alert("Necesitas seleccionar un validador");
+                    setSendingValidatorLoading(true);
+                    const testValidationResponse = await requestValidation(
+                      test.id!,
+                      saveValidator.current
+                    );
+                    setSendingValidatorLoading(false);
+                    if (testValidationResponse instanceof ResponseError)
+                      return alert(JSON.stringify(testValidationResponse));
+                    alert("Se ha notificado al usuario correctamente");
+                    // setValidators([]);
                   }}
                   text={`${
-                    deletingRemarkLoading ? "Eliminando" : "Eliminar"
-                  } observación para este test`}
-                  className={`mt-1 py-1 bg-red-500 border-red-300 ${
-                    deletingRemarkLoading || updatingRemarkLoading
-                      ? ""
-                      : "hover:bg-red-900 hover:border-red-500"
-                  } font-semibold w-full sm:w-auto`}
-                  disabled={deletingRemarkLoading || updatingRemarkLoading}
+                    sendingValidatorLoading ? "Enviando" : "Enviar"
+                  } a validación`}
+                  className={`mt-1 sm:mt-0 sm:ml-2 py-1 font-semibold min-w-max w-full sm:w-max`}
+                  disabled={sendingValidatorLoading}
                 >
-                  {deletingRemarkLoading ? (
+                  {sendingValidatorLoading ? (
                     <Spinner className="mr-1" />
                   ) : (
-                    <TrashIcon className="w-5 h-5 text-white" />
+                    <BadgeCheckIcon className="w-5 h-5 text-white" />
                   )}
                 </ButtonWithIcon>
-              )}
+              </div>
+              <p className="text-[#aeb2b7] text-sm">
+                Cuando envíes las solicitudes necesarias puedes cerrar este
+                modal y esperar hasta que el test haya sido aprobado (deberás
+                recargar esta pestaña)
+              </p>
             </div>
           </div>
-        </form>
-        {test.validator ? (
-          <div className="my-2 text-center">
-            <p className="text-gray-800 font-bold">Validado por</p>
-            {test.validator.profileImg && (
-              <div className="px-4 my-3 max-w-sm h-auto mx-auto">
-                <NextImage
-                  src={test.validator.profileImg}
-                  alt="profile_image_tester"
-                  priority
-                  width={300}
-                  height={300}
-                />
-              </div>
-            )}
-            <p>{test.validator.name}</p>
-            <p>{test.validator.email}</p>
-            <p>{test.validator.slug}</p>
-          </div>
+        </div>
+      </Modal>
+      <div className={`my-8 ${!test.validator && "mb-16"}`}>
+        <h1 className="text-2xl sm:text-4xl font-mono text-gray-800 font-bold">
+          {test.id}
+          {auth!["sub-lab"].length > 1 && (
+            <span className="ml-2 text-base font-normal text-gray-600 font-sans hidden sm:block">
+              {new Date(test.date).toLocaleString()}
+            </span>
+          )}
+        </h1>
+        {auth!["sub-lab"].length > 1 ? (
+          <>
+            <p className="text-gray-800">
+              Laboratorio:{" "}
+              <span className="font-bold text-teal-500">
+                {test.lab?.name || "Ninguno"}
+              </span>
+            </p>
+            <p className="text-gray-800 sm:hidden">
+              Creado el:{" "}
+              <span className="font-bold">
+                {new Date(test.date).toLocaleString()}
+              </span>
+            </p>
+          </>
         ) : (
-          <div className="block sm:flex w-full items-center my-2">
-            <SearchList
-              list={validators}
-              placeholder="Busca por algún identificador del empleado"
-              className="z-3 w-full"
-              onQueryChange={onChangeValidatorQuery}
-              loading={isValidatorLoading}
-              onChange={(_validator) =>
-                (saveValidator.current = _validator.value.toString())
-              }
-            />
-            {/* <Save
-              onClick={async () => {
-                if (!saveTester.current || saveTester.current === "-1")
-                  return alert("Necesitas seleccionar un tester");
-                const { status, testData } = await put(test.id!, {
-                  issuerId: saveTester.current,
-                });
-                if (testData instanceof ResponseError)
-                  return alert(JSON.stringify(testData));
-                test.issuer = testData!.issuer;
-                forceUpdate();
-                //setTesters([]); // just for forceRerender
-              }}
-              className="w-5 h-5 ml-3 fill-gray-500 hover:fill-teal-500 cursor-pointer"
-            /> */}
-            <ButtonWithIcon
-              onClick={async (e) => {
-                e.preventDefault();
-                if (!saveValidator.current || saveValidator.current === "-1")
-                  return alert("Necesitas seleccionar un validador");
-                setSendingValidatorLoading(true);
-                const testValidationResponse = await requestValidation(
-                  test.id!,
-                  saveValidator.current
-                );
-                setSendingValidatorLoading(false);
-                if (testValidationResponse instanceof ResponseError)
-                  return alert(JSON.stringify(testValidationResponse));
-                alert("Se ha notificado al usuario correctamente");
-                // setValidators([]);
-              }}
-              text={`${
-                sendingValidatorLoading ? "Enviando" : "Enviar"
-              } a validación`}
-              className={`mt-1 sm:mt-0 sm:ml-2 py-1 font-semibold min-w-max w-full sm:w-max`}
-              disabled={sendingValidatorLoading}
-            >
-              {sendingValidatorLoading ? (
-                <Spinner className="mr-1" />
-              ) : (
-                <BadgeCheckIcon className="w-5 h-5 text-white" />
-              )}
-            </ButtonWithIcon>
-          </div>
+          <p className="text-gray-800">
+            Creado el:{" "}
+            <span className="font-bold">
+              {new Date(test.date).toLocaleString()}
+            </span>
+          </p>
         )}
-        <div className="flex flex-col sm:flex-row justify-center text-center">
+        {/* Test info */}
+        <div className="my-4">
+          {!test.patient ? (
+            <div>
+              <p className="text-gray-800 font-semibold">
+                ¿Quién fue el paciente de este examen?
+              </p>
+              <div className="flex w-full items-center mb-2">
+                <SearchList
+                  list={patients}
+                  placeholder="Busca por algún identificador del paciente"
+                  className="z-3 w-full"
+                  addCustom
+                  onQueryChange={onChangePatientQuery}
+                  loading={isPatientLoading}
+                  onChange={(_patient) =>
+                    (savePatient.current = _patient.value.toString())
+                  }
+                  newAdded={createdNewPatient.current}
+                  onCreateClick={() => setIsCreatePatientOpen(true)}
+                />
+                {isPatientSavingLoading ? (
+                  <Spinner color="text-gray-400" className="ml-3" />
+                ) : (
+                  <Save
+                    onClick={async () => {
+                      if (!savePatient.current || savePatient.current === "-1")
+                        return alert("Necesitas seleccionar un paciente");
+                      setPatientSavingLoading(true);
+                      const { status, testData } = await put(test.id!, {
+                        patientId: savePatient.current,
+                      });
+                      setPatientSavingLoading(false);
+                      if (testData instanceof ResponseError)
+                        return alert(JSON.stringify(testData));
+                      test.patient = testData?.patient;
+                      forceUpdate();
+                      //setPatients([]); // just for forceRerender
+                    }}
+                    className="w-5 h-5 ml-3 fill-gray-500 hover:fill-teal-500 cursor-pointer"
+                  />
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-md shadow-lg bg-gradient-to-br from-[#e9e9e9] sm:from-[#f0f0f0] to-white px-4 py-2 mb-2">
+              <p className="text-gray-800 font-bold">
+                Información del paciente
+              </p>
+              <div className="sm:flex items-center">
+                <p className="mr-4">{test.patient.name}</p>
+                <p className="flex items-center mr-4">
+                  <IdentificationIcon className="h-5 w-5 text-gray-600" />:{" "}
+                  {test.patient.dui}
+                </p>
+                <p className="flex items-center mr-4">
+                  <UserIcon className="h-5 w-5 text-gray-600" />:{" "}
+                  {test.patient.sex}
+                </p>
+                <p className="flex items-center mr-4">
+                  <CakeIcon className="h-5 w-5 text-gray-600" />:{" "}
+                  {new Date(test.patient.dateBorn).toLocaleDateString()}
+                </p>
+                <p className="flex items-center mr-4">
+                  <PhoneIcon className="h-5 w-5 text-gray-600" />:{" "}
+                  {test.patient.phone}
+                </p>
+                <p className="flex items-center mr-4">
+                  <MailIcon className="h-5 w-5 text-gray-600" />:{" "}
+                  {test.patient.email}
+                </p>
+              </div>
+            </div>
+          )}
+          <p className="text-gray-800">
+            Sexo del paciente según Chem:{" "}
+            <span className="font-bold">{test.sex}</span>
+          </p>
+          <p className="font-bold text-gray-800">Tests:</p>
+          {test.tests.map((item) => (
+            <p key={item.name}>
+              {getTestItemName(item.name).name} {item.assign} {item.value}
+              {!item.range
+                ? ""
+                : `(${item.range.item}) ${item.range.between.from} - ${item.range.between.to}`}
+            </p>
+          ))}
+          <p className="font-bold text-gray-800 flex items-center">
+            Observaciones:
+            {!test.remark ? (
+              <span className="ml-1 font-normal">
+                {updatingRemarkLoading ? (
+                  <Spinner color="text-gray-500" className="ml-2" />
+                ) : (
+                  <>
+                    Ninguna,
+                    <span
+                      onClick={() => setRemarkModalOpen(true)}
+                      className="cursor-pointer font-semibold text-teal-500 hover:text-teal-300"
+                    >
+                      {" "}
+                      Agregar una observación
+                    </span>
+                  </>
+                )}
+              </span>
+            ) : (
+              <>
+                <span className="ml-1 font-normal">
+                  {test.remark.text}{" "}
+                  <span className="text-gray-400">
+                    (Observación hecha por: {test.remark.by})
+                  </span>
+                </span>
+                {updatingRemarkLoading ? (
+                  <Spinner color="text-gray-500" className="ml-2" />
+                ) : (
+                  <PencilIcon
+                    onClick={() => setRemarkModalOpen(true)}
+                    className={`h-5 w-5 ml-2 text-gray-400 ${
+                      deletingRemarkLoading || updatingRemarkLoading
+                        ? ""
+                        : "hover:text-gray-500 cursor-pointer"
+                    }`}
+                  />
+                )}
+                {deletingRemarkLoading ? (
+                  <Spinner color="text-gray-500" className="ml-2" />
+                ) : (
+                  <TrashIcon
+                    onClick={async () => {
+                      setDeletingRemarkLoading(true);
+                      const { status, testData } = await put(test.id!, {
+                        remark: null,
+                      });
+                      setDeletingRemarkLoading(false);
+                      if (testData instanceof ResponseError)
+                        return alert(JSON.stringify(testData));
+                      test.remark = testData?.remark;
+                      forceUpdate();
+                    }}
+                    className={`h-5 w-5 ml-2 text-gray-400 ${
+                      updatingRemarkLoading
+                        ? ""
+                        : "hover:text-red-500 cursor-pointer"
+                    }`}
+                  />
+                )}
+              </>
+            )}
+          </p>
+        </div>
+        <p className="text-gray-800 font-bold">
+          Test creado por:{" "}
+          <span className="font-normal">
+            {test.issuer ? (
+              test.issuer.name
+            ) : (
+              <>
+                {test.lab?.name || ""} o{" "}
+                <span
+                  onClick={() => setTesterModalOpen(true)}
+                  className="cursor-pointer font-semibold text-teal-500 hover:text-teal-300"
+                >
+                  Un empleado de este laboratorio
+                </span>
+              </>
+            )}
+          </span>
+        </p>
+        <p className="text-gray-800 font-bold">
+          Test validado por:{" "}
+          <span className="font-normal">
+            {test.validator ? (
+              test.validator.name
+            ) : (
+              <>
+                Aún no validado,
+                <span
+                  onClick={() => setValidatorModalOpen(true)}
+                  className="cursor-pointer font-semibold text-teal-500 hover:text-teal-300"
+                >
+                  {" "}
+                  solicitar una validación
+                </span>{" "}
+                o{" "}
+                <span
+                  onClick={async () => {
+                    const { status, testData } = await put(test.id!, {
+                      validatorId: auth!["sub-user"],
+                    });
+                    if (testData instanceof ResponseError)
+                      return alert(JSON.stringify(testData));
+                    test.validator = testData!.validator;
+                    forceUpdate();
+                  }}
+                  className="cursor-pointer font-semibold text-teal-500 hover:text-teal-300"
+                >
+                  {" "}
+                  validar
+                </span>
+              </>
+            )}
+          </span>
+        </p>
+        <div className="mt-2 flex flex-col sm:flex-row justify-center text-center">
           {!test.patient ? (
             <p>
               <span className="text-red-500 font-bold mr-1">*</span>
-              Necesitas definir el{" "}
-              <span className="text-teal-500 font-semibold">paciente</span> para
-              poder generar el pdf
+              Necesitas definir el <span className="font-bold">
+                paciente
+              </span>{" "}
+              para poder generar el pdf
             </p>
           ) : (
             <button
               className={`w-1/2 sm:w-auto mx-auto sm:mx-0 rounded-sm bg-red-500${
-                !!(testPDF.loading || !labImgJpg || !test || testPDF.error)
+                !!(testPDF.loading || !labImgJpg || !test || !!testPDF.error)
                   ? ""
                   : " hover:bg-red-700 hover:scale-105"
               } px-6 py-2 shadow-md my-2 transition duration-100 flex items-center text-white`}
