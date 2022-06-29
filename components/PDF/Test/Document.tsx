@@ -85,7 +85,7 @@ const ReportItem = ({
   );
 };
 
-const Document = ({ test, labImg }: { test: Test; labImg: string }) => {
+const Document = ({ test }: { test: Test }) => {
   return (
     <PDFDocument>
       <Page
@@ -126,13 +126,7 @@ const Document = ({ test, labImg }: { test: Test; labImg: string }) => {
             }}
           >
             <View style={{ flexGrow: 1 }} />
-            <Image
-              /* src={`http://localhost:3000/_next/image?url=${
-                test.lab!.img
-              }&w=1920&q=75`} */
-              src={labImg}
-              style={{ objectFit: "contain" }}
-            />
+            <Image src={test.lab!.img} style={{ objectFit: "contain" }} />
           </View>
         </View>
         <View
@@ -168,7 +162,7 @@ const Document = ({ test, labImg }: { test: Test; labImg: string }) => {
           <View style={{ flex: 1 }}>
             <ReportItem
               element="Fecha y hora de la solicitud"
-              value={new Date(test.date).toLocaleString()}
+              value={new Date(test.date).format("DD/MM/YYYY HH:MM A")}
               right
             />
             <ReportItem
@@ -179,7 +173,9 @@ const Document = ({ test, labImg }: { test: Test; labImg: string }) => {
             <ReportItem
               element="Fecha y hora de la validación"
               value={
-                test.validated ? new Date(test.validated).toLocaleString() : ""
+                test.validated
+                  ? new Date(test.validated).format("DD/MM/YYYY HH:MM A")
+                  : ""
               }
               right
             />

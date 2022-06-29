@@ -25,6 +25,7 @@ import { get } from "../../axios/User";
 import { Attachment, ButtonWithIcon, Input } from "../../components";
 import { EmployeeCard } from "../../components/Card";
 import { Spinner } from "../../components/Icons";
+import { showModal } from "../../components/Modal/showModal";
 import { Auth } from "../../types/Auth";
 import { Lab, LabWithEmployeeInfo, User, UserType } from "../../types/Prisma";
 import { ResponseError } from "../../types/Responses";
@@ -68,7 +69,7 @@ const index = ({
   }, []);
 
   return (
-    <div className="mt-2 md:mt-8">
+    <div className="mt-2 md:mt-8 max-w-6xl">
       {labInfo === undefined ? (
         <p className="text-gray-500 animate-pulse flex items-center">
           <Spinner pulse className="mr-2" color="text-gray-500" />
@@ -123,9 +124,12 @@ const index = ({
               }
               onFileAttached={async (file) => {
                 if (!file.type.startsWith("image"))
-                  return alert(
-                    "La imagen del laboratorio tiene que ser un archivo de imagen."
-                  );
+                  return showModal({
+                    icon: "error",
+                    title:
+                      "La imagen del laboratorio tiene que ser un archivo de imagen.",
+                    timer: 1500,
+                  });
                 const publicAssetUploadURL = await requestPutObjectURL();
 
                 try {
@@ -138,14 +142,23 @@ const index = ({
                     }&restartFlemikComponent=${Math.random()}`;
                     return _labs;
                   });
-                  return alert("Ocurrió un problema al subir la imagen.");
+                  return showModal({
+                    icon: "error",
+                    title: "Ocurrió un problema al subir la imagen.",
+                    timer: 1500,
+                  });
                 }
 
                 const labRequest = await updateLab(lab.id, {
                   img: publicAssetUploadURL.split("?")[0],
                 });
                 if (labRequest instanceof ResponseError)
-                  return alert(JSON.stringify(labRequest));
+                  return showModal({
+                    icon: "error",
+                    body: JSON.stringify(labRequest),
+                    buttons: "OK",
+                    submitButtonText: "Entendido",
+                  }); // TODO: Show real message
                 setLabInfo((_labInfo) => {
                   const _labs = [..._labInfo!];
                   _labs[labIdx].img = labRequest!.img;
@@ -180,17 +193,23 @@ const index = ({
                     `input[name="email"]`
                   ) as HTMLInputElement;
                   if (!emailInput || !emailInput.value.trim())
-                    return alert(
-                      "No puedes dejar el correo del empleado a invitar vacío"
-                    );
+                    return showModal({
+                      icon: "error",
+                      title:
+                        "No puedes dejar el correo del empleado a invitar vacío",
+                      buttons: "OK",
+                      submitButtonText: "Entendido",
+                    });
 
                   const alreadyInLab = lab.employees.findIndex(
                     ({ email }) => email === emailInput.value.trim()
                   );
                   if (alreadyInLab !== -1) {
-                    alert(
-                      `El empleado con correo "${emailInput.value.trim()}" ya forma parte de este laboratorio`
-                    );
+                    showModal({
+                      icon: "warning",
+                      body: `El empleado con correo "<b>${emailInput.value.trim()}</b>" ya forma parte de este laboratorio`,
+                      timer: 2200,
+                    });
                     emailInput.value = "";
                     setTimeout(() => emailInput.focus(), 0);
                     return;
@@ -221,16 +240,25 @@ const index = ({
                       if (
                         (data as ResponseError)["error"].key === "redundant"
                       ) {
-                        alert(
-                          `El empleado con correo "${emailInput.value.trim()}" ya forma parte de este laboratorio`
-                        );
+                        showModal({
+                          icon: "warning",
+                          body: `El empleado con correo "<b>${emailInput.value.trim()}</b>" ya forma parte de este laboratorio`,
+                          timer: 2200,
+                        });
                       } else {
-                        alert(JSON.stringify(data));
+                        showModal({
+                          icon: "error",
+                          body: JSON.stringify(data),
+                          buttons: "OK",
+                          submitButtonText: "Entendido",
+                        }); // TODO: Show real message
                       }
                     } else {
-                      alert(
-                        `Se ha enviado una invitación al correo "${emailInput.value.trim()}"`
-                      );
+                      showModal({
+                        icon: "success",
+                        body: `Se ha enviado una invitación al correo "<b>${emailInput.value.trim()}</b>"`,
+                        timer: 2200,
+                      });
                     }
                   }
                   emailInput.value = "";

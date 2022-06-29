@@ -46,18 +46,24 @@ const index = ({ children }: { children: JSX.Element }) => {
   }, [auth, router, router.pathname]);
 
   return (
-    <>
-      <Navbar isAuth={auth} setAuth={setAuth} />
-      {!auth && !SECURE_ROUTES.has(router.pathname) ? (
-        <div className="min-w-full min-h-screen-navbar flex justify-center items-center -translate-y-16">
-          <Spinner size="big" color="text-gray-300" />
-        </div>
-      ) : (
-        <div className="min-w-full min-h-[calc(100vh-8rem)] px-2 md:px-8">
-          {{ ...children, props: { ...children.props, auth, setAuth } }}
-        </div>
-      )}
-    </>
+    <div id="mainLayout">
+      <div id="blurLayoutModal" className="duration-200">
+        <Navbar isAuth={auth} setAuth={setAuth} />
+        {!auth && !SECURE_ROUTES.has(router.pathname) ? (
+          <div className="min-w-full min-h-screen-navbar flex justify-center items-center -translate-y-16 pt-16">
+            <Spinner size="big" color="text-gray-300" />
+          </div>
+        ) : (
+          <div
+            className={`min-w-full min-h-[calc(100vh-8rem)] ${
+              router.pathname !== "/" && "px-2 md:px-8"
+            } pt-16`}
+          >
+            {{ ...children, props: { ...children.props, auth, setAuth } }}
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

@@ -8,8 +8,11 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>Medical - Chemistry lab center</title>
-        <meta name="description" content="Medical - Chemistry lab center" />
+        <title>Flemik - Software de análisis clínicos</title>
+        <meta
+          name="description"
+          content="Flemik - Software de análisis clínicos"
+        />
         <link rel="icon" href="/favicon.ico" />
         <meta
           name="viewport"

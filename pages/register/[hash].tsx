@@ -14,6 +14,7 @@ import { Auth } from "../../types/Auth";
 import { auth as tryAuth } from "../../axios/Auth";
 import { create } from "../../axios/User";
 import { ResponseError } from "../../types/Responses";
+import { showModal } from "../../components/Modal/showModal";
 
 type Invitation = { email: string; labId: string };
 type InvalidInvitation = { error: string; type: "timeout" | "invalid" };
@@ -98,7 +99,12 @@ const RegisterByInvite = ({
           let isInvalidForm: { field: HTMLInputElement } | false = false;
           const userFields = Object.fromEntries(formData);
           if (Object.keys(userFields).length !== 2)
-            return alert("Falta algún valor, por favor recarga la página");
+            return showModal({
+              icon: "error",
+              title: `"Falta algún valor, por favor recarga la página"`,
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            });
           formData.forEach((value, key, field) => {
             if (isInvalidForm) return;
             if (!value.toString().trim())
@@ -108,7 +114,12 @@ const RegisterByInvite = ({
           });
           if (isInvalidForm) {
             (isInvalidForm as { field: HTMLInputElement }).field.focus();
-            return alert("No puedes dejar ningún campo vacío");
+            return showModal({
+              icon: "error",
+              title: `No puedes dejar ningún campo vacío`,
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            });
           }
           setLoadingSubmit(true);
           const data = await create(hash as string, {
@@ -117,7 +128,12 @@ const RegisterByInvite = ({
           });
           if (data instanceof ResponseError) {
             setLoadingSubmit(false);
-            return alert(JSON.stringify(data));
+            return showModal({
+              icon: "error",
+              body: JSON.stringify(data),
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            }); // TODO: Show real message
           }
           const auth = await tryAuth();
           setAuth(auth);

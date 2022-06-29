@@ -46,6 +46,7 @@ import { debounce } from "../../../utils";
 import { ResponseError } from "../../../types/Responses";
 import { Patient } from "../../../types/Prisma";
 import { Dialog } from "@headlessui/react";
+import { showModal } from "../../../components/Modal/showModal";
 
 type SearchListItem = {
   value: number | string;
@@ -59,12 +60,11 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   const [pdfState, updateState] = React.useState<number>();
   const forceUpdate = React.useCallback(() => updateState(Math.random()), []);
 
-  const [labImgJpg, setLabImgJpg] = useState("");
-
   const [updatingRemarkLoading, setUpdatingRemarkLoading] = useState(false);
   const [isRemarkModalOpen, setRemarkModalOpen] = useState(false);
   const [deletingRemarkLoading, setDeletingRemarkLoading] = useState(false);
 
+  const [isValidating, setValidating] = useState(false);
   const [sendingValidatorLoading, setSendingValidatorLoading] = useState(false);
 
   //#region TestPatient
@@ -177,36 +177,11 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
 
   const [testPDF, updatePDF] = usePDF({
     document:
-      test && test.lab && test.patient && labImgJpg ? (
-        <Document test={test!} labImg={labImgJpg} />
-      ) : (
-        <></>
-      ),
+      test && test.lab && test.patient ? <Document test={test!} /> : <></>,
   });
 
-  useEffect(() => {
-    if (!test) return;
-    if (labImgJpg) return updatePDF();
-    const image = new Image();
-
-    image.onload = function () {
-      const canvas = document.createElement("canvas");
-      canvas.width = image.naturalWidth;
-      canvas.height = image.naturalHeight;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(image, 0, 0);
-      }
-      setLabImgJpg(canvas.toDataURL("image/jpeg", 1));
-    };
-
-    image.src = `/_next/image?url=${encodeURIComponent(
-      test.lab!.img
-    )}&w=750&q=75`;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [test, labImgJpg, pdfState]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => test && updatePDF(), [test, pdfState]);
 
   if (isAuthorized === undefined)
     return (
@@ -264,8 +239,14 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
           });
           setUpdatingRemarkLoading(false);
           if (testData instanceof ResponseError)
-            return alert(JSON.stringify(testData));
+            return showModal({
+              icon: "error",
+              body: JSON.stringify(testData),
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            }); // TODO: Show real message
           test.remark = testData?.remark;
+          forceUpdate();
         }}
         requiredItems={new Set(["remark"])}
         initialFocus="remark"
@@ -308,7 +289,12 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
           items["dateBorn"] = new Date(items["dateBorn"]);
           const patient = await create(items);
           if (patient instanceof ResponseError)
-            return alert(JSON.stringify(patient));
+            return showModal({
+              icon: "error",
+              body: JSON.stringify(patient),
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            }); // TODO: Show real message
           const selectedNewPatient = {
             value: patient.id,
             text: `${patient.dui}, ${patient.name}, ${patient.sex}`,
@@ -336,13 +322,24 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
         disableCloseWhenTouchOutside
         submitCallback={async () => {
           if (!saveTester.current || saveTester.current === "-1")
-            return alert("Necesitas seleccionar un tester");
+            return showModal({
+              icon: "error",
+              title: "Necesitas seleccionar un tester",
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            });
           const { status, testData } = await put(test.id!, {
             issuerId: saveTester.current,
           });
           if (testData instanceof ResponseError)
-            return alert(JSON.stringify(testData));
+            return showModal({
+              icon: "error",
+              body: JSON.stringify(testData),
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            }); // TODO: Show real message
           test.issuer = testData!.issuer;
+          forceUpdate();
         }}
         requiredItems={new Set(["tester"])}
         initialFocus="tester"
@@ -429,7 +426,12 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                       !saveValidator.current ||
                       saveValidator.current === "-1"
                     )
-                      return alert("Necesitas seleccionar un validador");
+                      return showModal({
+                        icon: "error",
+                        title: "Necesitas seleccionar un validador",
+                        buttons: "OK",
+                        submitButtonText: "Entendido",
+                      });
                     setSendingValidatorLoading(true);
                     const testValidationResponse = await requestValidation(
                       test.id!,
@@ -437,8 +439,17 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                     );
                     setSendingValidatorLoading(false);
                     if (testValidationResponse instanceof ResponseError)
-                      return alert(JSON.stringify(testValidationResponse));
-                    alert("Se ha notificado al usuario correctamente");
+                      return showModal({
+                        icon: "error",
+                        body: JSON.stringify(testValidationResponse),
+                        buttons: "OK",
+                        submitButtonText: "Entendido",
+                      }); // TODO: Show real message
+                    showModal({
+                      icon: "success",
+                      body: "Se ha notificado al usuario correctamente",
+                      timer: 1500,
+                    });
                     // setValidators([]);
                   }}
                   text={`${
@@ -463,12 +474,12 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
           </div>
         </div>
       </Modal>
-      <div className={`my-8 ${!test.validator && "mb-16"}`}>
+      <div className={`max-w-6xl my-8 ${!test.validator && "mb-16"}`}>
         <h1 className="text-2xl sm:text-4xl font-mono text-gray-800 font-bold">
           {test.id}
           {auth!["sub-lab"].length > 1 && (
             <span className="ml-2 text-base font-normal text-gray-600 font-sans hidden sm:block">
-              {new Date(test.date).toLocaleString()}
+              {new Date(test.date).format("DD/MM/YYYY HH:MM A")}
             </span>
           )}
         </h1>
@@ -483,7 +494,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
             <p className="text-gray-800 sm:hidden">
               Creado el:{" "}
               <span className="font-bold">
-                {new Date(test.date).toLocaleString()}
+                {new Date(test.date).format("DD/MM/YYYY HH:MM A")}
               </span>
             </p>
           </>
@@ -491,7 +502,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
           <p className="text-gray-800">
             Creado el:{" "}
             <span className="font-bold">
-              {new Date(test.date).toLocaleString()}
+              {new Date(test.date).format("DD/MM/YYYY HH:MM A")}
             </span>
           </p>
         )}
@@ -522,14 +533,24 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                   <Save
                     onClick={async () => {
                       if (!savePatient.current || savePatient.current === "-1")
-                        return alert("Necesitas seleccionar un paciente");
+                        return showModal({
+                          icon: "error",
+                          title: "Necesitas seleccionar un paciente",
+                          buttons: "OK",
+                          submitButtonText: "Entendido",
+                        });
                       setPatientSavingLoading(true);
                       const { status, testData } = await put(test.id!, {
                         patientId: savePatient.current,
                       });
                       setPatientSavingLoading(false);
                       if (testData instanceof ResponseError)
-                        return alert(JSON.stringify(testData));
+                        return showModal({
+                          icon: "error",
+                          body: JSON.stringify(testData),
+                          buttons: "OK",
+                          submitButtonText: "Entendido",
+                        }); // TODO: Show real message
                       test.patient = testData?.patient;
                       forceUpdate();
                       //setPatients([]); // just for forceRerender
@@ -570,19 +591,25 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
             </div>
           )}
           <p className="text-gray-800">
-            Sexo del paciente según Chem:{" "}
+            Sexo del paciente según el analizador:{" "}
             <span className="font-bold">{test.sex}</span>
           </p>
-          <p className="font-bold text-gray-800">Tests:</p>
-          {test.tests.map((item) => (
-            <p key={item.name}>
-              {getTestItemName(item.name).name} {item.assign} {item.value}
-              {!item.range
-                ? ""
-                : `(${item.range.item}) ${item.range.between.from} - ${item.range.between.to}`}
-            </p>
-          ))}
-          <p className="font-bold text-gray-800 flex items-center">
+          <div className="rounded-md shadow-lg bg-gradient-to-br from-[#e9e9e9] sm:from-[#f0f0f0] to-white px-4 py-2 mb-2">
+            <p className="font-bold text-gray-800">Tests:</p>
+            <div
+              className={`${test.tests.length > 4 && "sm:grid"} grid-cols-3`}
+            >
+              {test.tests.map((item) => (
+                <p key={item.name}>
+                  {getTestItemName(item.name).name} {item.assign} {item.value}
+                  {!item.range
+                    ? ""
+                    : `(${item.range.item}) ${item.range.between.from} - ${item.range.between.to}`}
+                </p>
+              ))}
+            </div>
+          </div>
+          <p className="font-bold text-gray-800 sm:flex items-center">
             Observaciones:
             {!test.remark ? (
               <span className="ml-1 font-normal">
@@ -603,46 +630,53 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
               </span>
             ) : (
               <>
-                <span className="ml-1 font-normal">
+                <span className="sm:flex items-center mx-1 font-normal">
                   {test.remark.text}{" "}
                   <span className="text-gray-400">
                     (Observación hecha por: {test.remark.by})
                   </span>
+                  <span className="inline-flex translate-y-1 sm:translate-y-0">
+                    {updatingRemarkLoading ? (
+                      <Spinner color="text-gray-500" className="ml-2" />
+                    ) : (
+                      <PencilIcon
+                        onClick={() => setRemarkModalOpen(true)}
+                        className={`h-5 w-5 ml-2 text-gray-400 ${
+                          deletingRemarkLoading || updatingRemarkLoading
+                            ? ""
+                            : "hover:text-gray-500 cursor-pointer"
+                        }`}
+                      />
+                    )}
+                    {deletingRemarkLoading ? (
+                      <Spinner color="text-gray-500" className="ml-2" />
+                    ) : (
+                      <TrashIcon
+                        onClick={async () => {
+                          setDeletingRemarkLoading(true);
+                          const { status, testData } = await put(test.id!, {
+                            remark: null,
+                          });
+                          setDeletingRemarkLoading(false);
+                          if (testData instanceof ResponseError)
+                            return showModal({
+                              icon: "error",
+                              body: JSON.stringify(testData),
+                              buttons: "OK",
+                              submitButtonText: "Entendido",
+                            }); // TODO: Show real message
+                          test.remark = testData?.remark;
+                          forceUpdate();
+                        }}
+                        className={`h-5 w-5 ml-2 text-gray-400 ${
+                          updatingRemarkLoading
+                            ? ""
+                            : "hover:text-red-500 cursor-pointer"
+                        }`}
+                      />
+                    )}
+                  </span>
                 </span>
-                {updatingRemarkLoading ? (
-                  <Spinner color="text-gray-500" className="ml-2" />
-                ) : (
-                  <PencilIcon
-                    onClick={() => setRemarkModalOpen(true)}
-                    className={`h-5 w-5 ml-2 text-gray-400 ${
-                      deletingRemarkLoading || updatingRemarkLoading
-                        ? ""
-                        : "hover:text-gray-500 cursor-pointer"
-                    }`}
-                  />
-                )}
-                {deletingRemarkLoading ? (
-                  <Spinner color="text-gray-500" className="ml-2" />
-                ) : (
-                  <TrashIcon
-                    onClick={async () => {
-                      setDeletingRemarkLoading(true);
-                      const { status, testData } = await put(test.id!, {
-                        remark: null,
-                      });
-                      setDeletingRemarkLoading(false);
-                      if (testData instanceof ResponseError)
-                        return alert(JSON.stringify(testData));
-                      test.remark = testData?.remark;
-                      forceUpdate();
-                    }}
-                    className={`h-5 w-5 ml-2 text-gray-400 ${
-                      updatingRemarkLoading
-                        ? ""
-                        : "hover:text-red-500 cursor-pointer"
-                    }`}
-                  />
-                )}
               </>
             )}
           </p>
@@ -665,38 +699,48 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
             )}
           </span>
         </p>
-        <p className="text-gray-800 font-bold">
-          Test validado por:{" "}
-          <span className="font-normal">
+        <p className="text-gray-800 font-bold flex">
+          Test validado por:
+          <span className="ml-1 font-normal">
             {test.validator ? (
               test.validator.name
             ) : (
-              <>
+              <span className="flex items-center">
                 Aún no validado,
                 <span
                   onClick={() => setValidatorModalOpen(true)}
-                  className="cursor-pointer font-semibold text-teal-500 hover:text-teal-300"
+                  className="mx-1 cursor-pointer font-semibold text-teal-500 hover:text-teal-300"
                 >
-                  {" "}
                   solicitar una validación
-                </span>{" "}
-                o{" "}
-                <span
-                  onClick={async () => {
-                    const { status, testData } = await put(test.id!, {
-                      validatorId: auth!["sub-user"],
-                    });
-                    if (testData instanceof ResponseError)
-                      return alert(JSON.stringify(testData));
-                    test.validator = testData!.validator;
-                    forceUpdate();
-                  }}
-                  className="cursor-pointer font-semibold text-teal-500 hover:text-teal-300"
-                >
-                  {" "}
-                  validar
                 </span>
-              </>
+                o
+                {isValidating ? (
+                  <Spinner color="text-gray-500" className="ml-2" />
+                ) : (
+                  <span
+                    onClick={async () => {
+                      setValidating(true);
+                      const { status, testData } = await put(test.id!, {
+                        validatorId: auth!["sub-user"],
+                      });
+                      setValidating(false);
+                      if (testData instanceof ResponseError)
+                        return showModal({
+                          icon: "error",
+                          body: JSON.stringify(testData),
+                          buttons: "OK",
+                          submitButtonText: "Entendido",
+                        }); // TODO: Show real message
+                      test.validator = testData!.validator;
+                      test.validated = testData!.validated;
+                      forceUpdate();
+                    }}
+                    className="ml-1 cursor-pointer font-semibold text-teal-500 hover:text-teal-300"
+                  >
+                    validar
+                  </span>
+                )}
+              </span>
             )}
           </span>
         </p>
@@ -711,17 +755,14 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
             </p>
           ) : (
             <button
-              className={`w-1/2 sm:w-auto mx-auto sm:mx-0 rounded-sm bg-red-500${
-                !!(testPDF.loading || !labImgJpg || !test || !!testPDF.error)
+              className={`w-full sm:w-auto mx-auto sm:mx-0 rounded-sm bg-red-500${
+                !!(testPDF.loading || !test || !!testPDF.error)
                   ? ""
                   : " hover:bg-red-700 hover:scale-105"
-              } px-6 py-2 shadow-md my-2 transition duration-100 flex items-center text-white`}
-              disabled={
-                testPDF.loading || !labImgJpg || !test || !!testPDF.error
-              }
+              } px-6 py-2 shadow-md my-2 transition duration-100 flex items-center justify-center text-white`}
+              disabled={testPDF.loading || !test || !!testPDF.error}
               onClick={() => {
-                if (testPDF.loading || !labImgJpg || !test || !!testPDF.error)
-                  return;
+                if (testPDF.loading || !test || !!testPDF.error) return;
                 const a = document.createElement("a");
                 a.href = testPDF.url!;
                 a.download = test.id!;
@@ -730,7 +771,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                 document.body.removeChild(a);
               }}
             >
-              {testPDF.loading || !labImgJpg || !test ? (
+              {testPDF.loading || !test ? (
                 <div className="animate-pulse flex items-center">
                   <Spinner pulse /> Generando...
                 </div>
@@ -742,7 +783,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
               ) : (
                 <>
                   <DocumentDownloadIcon className="h-6 w-6 mr-2 text-white" />
-                  Download PDF
+                  Descargar Examen
                 </>
               )}
             </button>

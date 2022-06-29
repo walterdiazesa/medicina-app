@@ -16,6 +16,7 @@ import { getLaboratories } from "../../axios/Lab";
 import { me, updateMe } from "../../axios/User";
 import { Attachment, ButtonWithIcon, Input } from "../../components";
 import { Save, Spinner } from "../../components/Icons";
+import { showModal } from "../../components/Modal/showModal";
 import { listen, unListen } from "../../socketio";
 import { Auth } from "../../types/Auth";
 import { Lab, User } from "../../types/Prisma";
@@ -69,7 +70,7 @@ const index = ({
   );
 
   return (
-    <div className="mt-2 md:mt-8">
+    <div className="mt-2 md:mt-8 max-w-6xl">
       <h1 className="text-lg font-semibold mb-2">Instaladores</h1>
       {installers === undefined ? (
         <p className="text-gray-500 animate-pulse flex items-center">
@@ -158,9 +159,12 @@ const index = ({
                 }
                 onFileAttached={async (file) => {
                   if (!file.type.startsWith("image"))
-                    return alert(
-                      "La imagen de perfil tiene que ser un archivo de imagen."
-                    );
+                    return showModal({
+                      icon: "error",
+                      title:
+                        "La imagen de perfil tiene que ser un archivo de imagen.",
+                      timer: 1500,
+                    });
                   const lastPayloadImg = auth.img;
                   const publicAssetUploadURL = await requestPutObjectURL();
 
@@ -174,14 +178,23 @@ const index = ({
                           _profile!.profileImg
                         }&restartFlemikComponent=${Math.random()}`,
                       }));
-                    return alert("Ocurrió un problema al subir la imagen.");
+                    return showModal({
+                      icon: "error",
+                      title: "Ocurrió un problema al subir la imagen.",
+                      timer: 1500,
+                    });
                   }
 
                   const user = await updateMe({
                     profileImg: publicAssetUploadURL.split("?")[0],
                   });
                   if (user instanceof ResponseError)
-                    return alert(JSON.stringify(user));
+                    return showModal({
+                      icon: "error",
+                      body: JSON.stringify(user),
+                      buttons: "OK",
+                      submitButtonText: "Entendido",
+                    }); // TODO: Show real message
                   if (!profile) return;
                   setProfile((_profile) => ({
                     ..._profile!,
@@ -206,14 +219,28 @@ const index = ({
                     !formData.has("newPassword") ||
                     !formData.get("newPassword")!.toString().trim()
                   )
-                    return alert("No puedes dejar ningún campo vacío");
+                    return showModal({
+                      icon: "error",
+                      title: `No puedes dejar ningún campo vacío`,
+                      buttons: "OK",
+                      submitButtonText: "Entendido",
+                    });
                   const updatedPass = await changePassword({
                     oldPassword: formData.get("oldPassword")!.toString(),
                     newPassword: formData.get("newPassword")!.toString(),
                   });
                   if (updatedPass instanceof ResponseError)
-                    return alert(JSON.stringify(updatedPass));
-                  alert("La contraseña ha sido actualizada correctamente");
+                    return showModal({
+                      icon: "error",
+                      body: JSON.stringify(updatedPass),
+                      buttons: "OK",
+                      submitButtonText: "Entendido",
+                    }); // TODO: Show real message
+                  showModal({
+                    icon: "success",
+                    body: "La contraseña ha sido actualizada correctamente",
+                    timer: 1500,
+                  });
                   (
                     form.querySelector(
                       `[name="oldPassword"]`

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { deleteTest, get } from "../../axios/Test";
 import { Spinner } from "../../components/Icons";
 import { Test } from "../../types/Prisma/Test";
@@ -9,6 +9,7 @@ import {
   DocumentTextIcon,
   IdentificationIcon,
   OfficeBuildingIcon,
+  SearchIcon,
   TrashIcon,
   UserIcon,
   XCircleIcon,
@@ -17,6 +18,8 @@ import Link from "next/link";
 import { listen, socket } from "../../socketio";
 import { useRouter } from "next/router";
 import { ResponseError } from "../../types/Responses";
+import { Input, Modal } from "../../components";
+import { showModal } from "../../components/Modal/showModal";
 
 interface RealTimeTest extends Test {
   justInTime?: boolean;
@@ -26,6 +29,32 @@ const index = () => {
   const [, updateState] = React.useState<any>();
   const forceUpdate = React.useCallback(() => updateState({}), []);
   const [tests, setTests] = useState<RealTimeTest[] | null>();
+
+  const [testQuery, setTestQuery] = useState("");
+  const queryTests = useMemo(() => {
+    return tests && testQuery
+      ? tests.filter((test) => {
+          if (test.id!.normalizeQuery().includes(testQuery.normalizeQuery()))
+            return true;
+          if (
+            test.patient &&
+            (test
+              .patient!.name.normalizeQuery()
+              .includes(testQuery.normalizeQuery()) ||
+              test
+                .patient!.dui.normalizeQuery()
+                .includes(testQuery.normalizeQuery()) ||
+              test
+                .patient!.email.normalizeQuery()
+                .includes(testQuery.normalizeQuery()) ||
+              test
+                .patient!.phone.normalizeQuery()
+                .includes(testQuery.normalizeQuery()))
+          )
+            return true;
+        })
+      : tests;
+  }, [testQuery, tests]);
 
   useEffect(() => {
     get({ order: "desc" }).then((_tests) => setTests(_tests));
@@ -70,96 +99,119 @@ const index = () => {
           </h1>
         </div>
       ) : (
-        tests.map((test) => (
-          <Link key={test.id!} href={`/test/${test.id!}`}>
-            <div>
-              {test.justInTime && (
-                <span className="animate-ping absolute inline-flex h-1.5 w-1.5 rounded-full bg-teal-500 opacity-75 mt-1 ml-0.5" />
-              )}
-              <div className="rounded-sm bg-zinc-50 hover:bg-zinc-100 px-2 py-2 shadow-md my-4 flex items-center justify-between cursor-pointer">
-                <div className="flex items-center">
-                  <div className="h-full w-5 mr-2">
-                    <UserIcon
-                      className={`h-5 w-5 ${
-                        test.sex === "Femenino"
-                          ? "text-pink-400"
-                          : test.sex === "Masculino"
-                          ? "text-sky-600"
-                          : "text-gray-700"
-                      }`}
-                    />
-                  </div>
-                  <p className="text-gray-500 font-semibold w-32 sm:w-36 text-sm sm:text-base">
-                    {new Date(test.date).toLocaleString()}
-                  </p>
-                  <p
-                    className={`${
-                      test.labId ? "text-gray-500" : "text-gray-400"
-                    } font-semibold flex items-center md:w-56 mr-2.5 md:mr-0`}
-                  >
-                    <OfficeBuildingIcon
-                      className={`h-5 w-5 ${
-                        !test.labId ? "text-zinc-400" : "text-zinc-600"
-                      } md:text-zinc-400`}
-                    />
-                    <span className="hidden md:block truncate">
-                      : {test.lab?.name || "Sin laboratorio"}
-                    </span>
-                  </p>
-                  <p
-                    className={`${
-                      test.patientId ? "text-gray-500" : "text-gray-400"
-                    } font-semibold flex items-center md:w-36 mr-2 md:mr-0`}
-                  >
-                    <IdentificationIcon
-                      className={`h-5 w-5 ${
-                        !test.patientId ? "text-zinc-400" : "text-zinc-600"
-                      } md:text-zinc-400`}
-                    />
-                    <span className="hidden md:block truncate">
-                      : {test.patient?.dui || "Sin paciente"}
-                    </span>
-                  </p>
-                </div>
-                <div className="flex items-center truncate">
-                  <DocumentDownloadIcon className="h-5 w-5 mr-2 text-red-500 hover:text-red-900" />
-                  {/* <DocumentReportIcon className="h-5 w-5 mr-2 text-green-700 hover:text-green-900" />
+        <div className="mt-8">
+          <Input
+            placeholder="Busca un examen por ID o algún identificador del paciente"
+            type="text"
+            autofocus
+            name="search"
+            icon={<SearchIcon className="w-5 h-5 text-gray-400" />}
+            onChange={(e) => {
+              const query = e.target.value;
+              setTestQuery(query);
+            }}
+          />
+          {queryTests &&
+            queryTests.map((test) => (
+              <Link key={test.id!} href={`/test/${test.id!}`}>
+                <div>
+                  {test.justInTime && (
+                    <span className="animate-ping absolute inline-flex h-1.5 w-1.5 rounded-full bg-teal-500 opacity-75 mt-1 ml-0.5" />
+                  )}
+                  <div className="rounded-sm bg-zinc-50 hover:bg-zinc-100 px-2 py-2 shadow-md my-4 flex items-center justify-between cursor-pointer">
+                    <div className="flex items-center">
+                      <div className="h-full w-5 mr-2">
+                        <UserIcon
+                          className={`h-5 w-5 ${
+                            test.sex === "Femenino"
+                              ? "text-pink-400"
+                              : test.sex === "Masculino"
+                              ? "text-sky-600"
+                              : "text-gray-700"
+                          }`}
+                        />
+                      </div>
+                      <p className="text-gray-500 font-semibold w-40 sm:w-44 text-sm sm:text-base">
+                        {new Date(test.date).format("DD/MM/YYYY HH:MM A")}
+                      </p>
+                      <p
+                        className={`${
+                          test.labId ? "text-gray-500" : "text-gray-400"
+                        } font-semibold flex items-center md:w-64 mr-2.5 md:mr-0`}
+                      >
+                        <OfficeBuildingIcon
+                          className={`h-5 w-5 ${
+                            !test.labId ? "text-zinc-400" : "text-zinc-600"
+                          } md:text-zinc-400`}
+                        />
+                        <span className="hidden md:block truncate">
+                          : {test.lab?.name || "Sin laboratorio"}
+                        </span>
+                      </p>
+                      <p
+                        className={`${
+                          test.patientId ? "text-gray-500" : "text-gray-400"
+                        } font-semibold flex items-center md:w-36 mr-2 md:mr-0`}
+                      >
+                        <IdentificationIcon
+                          className={`h-5 w-5 ${
+                            !test.patientId ? "text-zinc-400" : "text-zinc-600"
+                          } md:text-zinc-400`}
+                        />
+                        <span className="hidden md:block truncate">
+                          : {test.patient?.dui || "Sin paciente"}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="flex items-center truncate">
+                      <DocumentDownloadIcon className="h-5 w-5 mr-2 text-red-500 hover:text-red-900" />
+                      {/* <DocumentReportIcon className="h-5 w-5 mr-2 text-green-700 hover:text-green-900" />
                   <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-500 hover:text-blue-700" /> */}
-                  <p
-                    className={`text-gray-500 font-semibold text-sm sm:text-base hidden sm:block`}
-                  >
-                    [
-                    {(
-                      JSON.parse(JSON.stringify(test.tests, ["name"])) as {
-                        name: string;
-                      }[]
-                    ).map(
-                      ({ name }, idx) =>
-                        (idx ? ", " : "") + name.replace("-PS", "")
-                    )}
-                    ]{/* [{"name":"GLU-PS"},{"name":"TCHO-PS"}] */}
-                  </p>
-                  <TrashIcon
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      const deleteTestConfirm = confirm(
-                        `¿Realmente desea eliminar el test "${test.id}"?`
-                      );
-                      if (!deleteTestConfirm) return;
-                      const isDeleted = await deleteTest(test.id!);
-                      if (isDeleted instanceof ResponseError)
-                        return alert(JSON.stringify(isDeleted));
-                      setTests((_tests) =>
-                        _tests!.filter(({ id }) => id !== test.id)
-                      );
-                    }}
-                    className="h-5 w-5 ml-2 text-gray-400 hover:text-red-500"
-                  />
+                      <p
+                        className={`text-gray-500 font-semibold text-sm sm:text-base hidden sm:block`}
+                      >
+                        [
+                        {(
+                          JSON.parse(JSON.stringify(test.tests, ["name"])) as {
+                            name: string;
+                          }[]
+                        ).map(
+                          ({ name }, idx) =>
+                            (idx ? ", " : "") + name.replace("-PS", "")
+                        )}
+                        ]{/* [{"name":"GLU-PS"},{"name":"TCHO-PS"}] */}
+                      </p>
+                      <TrashIcon
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          //setDeleteTestModalOpen(true);
+                          const deleteTestConfirm = await showModal({
+                            icon: "warning",
+                            body: `¿Realmente desea eliminar el test "<b>${test.id}</b>"?`,
+                            buttons: "Delete",
+                            submitButtonText: "Eliminar",
+                          });
+                          if (!deleteTestConfirm) return;
+                          const isDeleted = await deleteTest(test.id!);
+                          if (isDeleted instanceof ResponseError)
+                            return showModal({
+                              icon: "error",
+                              body: JSON.stringify(isDeleted),
+                              buttons: "OK",
+                              submitButtonText: "Entendido",
+                            }); // TODO: Show real message
+                          setTests((_tests) =>
+                            _tests!.filter(({ id }) => id !== test.id)
+                          );
+                        }}
+                        className="h-5 w-5 ml-2 text-gray-400 hover:text-red-500"
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </Link>
-        ))
+              </Link>
+            ))}
+        </div>
       )}
     </div>
   );

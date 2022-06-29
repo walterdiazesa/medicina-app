@@ -17,6 +17,7 @@ import { ButtonWithIcon, Input } from "../../components";
 import { auth as tryAuth } from "../../axios/Auth";
 import { Auth } from "../../types/Auth";
 import { useRouter } from "next/router";
+import { showModal } from "../../components/Modal/showModal";
 
 const index = ({
   auth,
@@ -46,7 +47,12 @@ const index = ({
           let isInvalidForm: { field: HTMLInputElement } | false = false;
           const labFields = Object.fromEntries(formData);
           if (Object.keys(labFields).length !== 8)
-            return alert("Falta algún valor, por favor recarga la página");
+            return showModal({
+              icon: "error",
+              title: `"Falta algún valor, por favor recarga la página"`,
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            });
           formData.forEach((value, key, field) => {
             if (isInvalidForm) return;
             if (!optionalFields.has(key) && !value.toString().trim())
@@ -56,11 +62,22 @@ const index = ({
           });
           if (isInvalidForm) {
             (isInvalidForm as { field: HTMLInputElement }).field.focus();
-            return alert("No puedes dejar ningún campo vacío");
+            return showModal({
+              icon: "error",
+              title: `No puedes dejar ningún campo vacío`,
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            });
           }
           const { created, data } = await createLaboratory(labFields);
 
-          if (!created) return alert(JSON.stringify(data));
+          if (!created)
+            return showModal({
+              icon: "error",
+              body: JSON.stringify(data),
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            }); // TODO: Show real message
 
           const auth = await tryAuth();
           setAuth(auth);
@@ -157,29 +174,6 @@ const index = ({
           <OfficeBuildingIcon className="text-white h-5 w-5" />
         </ButtonWithIcon>
       </form>
-      <button
-        onClick={() => {
-          // @ts-ignore
-          document.getElementsByName("name")[0].value = "Test Lab 2";
-          // @ts-ignore
-          document.getElementsByName("address")[0].value =
-            "Calle La Mascota, Edificio Pharma, Piso 13, Local 5";
-          // @ts-ignore
-          document.getElementsByName("publicPhone")[0].value =
-            "(503) 2294-5356";
-          // @ts-ignore
-          document.getElementsByName("publicEmail")[0].value =
-            "contact@testlab2.com";
-          // @ts-ignore
-          document.getElementsByName("email")[0].value = "testlab2@gmail.com";
-          // @ts-ignore
-          document.getElementsByName("password")[0].value = "vapuesdiego";
-          // @ts-ignore
-          document.getElementsByName("phone")[0].value = "78034257";
-        }}
-      >
-        MockFill
-      </button>
     </>
   );
 };

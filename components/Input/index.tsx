@@ -12,6 +12,7 @@ const index = ({
   contentsize = undefined,
   disabled,
   rows,
+  onChange,
 }: {
   icon?: JSX.Element;
   placeholder: string;
@@ -21,6 +22,7 @@ const index = ({
   defaultValue?: string;
   autofocus?: boolean;
   disabled?: boolean;
+  onChange?: React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
 } & (
   | { multiline?: undefined; contentsize?: undefined; rows?: undefined }
   | ({ multiline: true } & (
@@ -42,12 +44,14 @@ const index = ({
           className="py-1.5 text-sm text-gray-400 rounded-md pr-8 pl-3 border-2 border-gray focus:border-gray-600 focus:border-opacity-40 focus:outline-none bg-white focus:text-gray-600 w-full"
           placeholder={placeholder}
           autoComplete="off"
+          {...(onChange && { onChange })}
         />
       ) : (
         <textarea
           disabled={disabled}
           rows={(contentsize && undefined) || rows || 5}
           autoFocus={autofocus}
+          {...(onChange && { onChange })}
           name={name}
           defaultValue={defaultValue}
           className={`${

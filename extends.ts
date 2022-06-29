@@ -25,6 +25,20 @@ Date.prototype.diff = function (date, unit) {
   return Math.abs(new Date(diff_ms).getUTCFullYear() - 1970);
 };
 
+Date.prototype.format = function (format: "DD/MM/YYYY HH:MM A") {
+  if (format === "DD/MM/YYYY HH:MM A") {
+    return this.toLocaleString(undefined, {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour12: true,
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+  return "";
+};
+
 String.prototype.normalizeQuery = function () {
   return this.normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")

@@ -8,6 +8,7 @@ import {
   QuestionMarkCircleIcon,
   XCircleIcon,
 } from "@heroicons/react/outline";
+import { showModal } from "./showModal";
 
 type Button = {
   text: string;
@@ -127,7 +128,9 @@ const Modal = ({
             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
             <div className="inline-block align-bottom bg-white rounded-lg text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-              {<form id="modal_form">{children}</form> || (
+              {children ? (
+                <form id="modal_form">{children}</form>
+              ) : (
                 <div
                   className={`bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 ${
                     !buttons ? "rounded-b-lg" : ""
@@ -189,12 +192,16 @@ const Modal = ({
                             (
                               isInvalidForm as { field: HTMLInputElement }
                             ).field.focus();
-                          return alert(
-                            requiredItems instanceof Set ||
+                          return showModal({
+                            icon: "error",
+                            title:
+                              requiredItems instanceof Set ||
                               !requiredItems.message
-                              ? "No puedes dejar ningún campo vacío"
-                              : requiredItems.message
-                          );
+                                ? "No puedes dejar ningún campo vacío"
+                                : requiredItems.message,
+                            buttons: "OK",
+                            submitButtonText: "Entendido",
+                          });
                         }
                       }
                       if (submitCallback)

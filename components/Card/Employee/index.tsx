@@ -9,6 +9,7 @@ import { ButtonWithIcon } from "../..";
 import { patchUsers as removeUser, updateOwner } from "../../../axios/Lab";
 import { LabWithEmployeeInfo, UserType } from "../../../types/Prisma";
 import { Spinner } from "../../Icons";
+import { showModal } from "../../Modal/showModal";
 
 const index = ({
   user,
@@ -49,7 +50,12 @@ const index = ({
               owner: id,
               type: owner ? "REMOVE" : "ADD",
             }).then((response) => {
-              if (!response) return alert("No se pudo actualizar los roles");
+              if (!response)
+                return showModal({
+                  icon: "error",
+                  title: `No se pudieron actualizar los roles`,
+                  timer: 1500,
+                });
               setLabInfo((_labInfo) => {
                 const _labs = [..._labInfo!];
                 const labIdx = _labs.findIndex((lab) => lab.id === labId);
@@ -85,7 +91,12 @@ const index = ({
               labId,
               user: id,
             }).then((response) => {
-              if (!response) return alert("No se pudo eliminar al empleado");
+              if (!response)
+                return showModal({
+                  icon: "error",
+                  title: `No se pudo eliminar al empleado`,
+                  timer: 1500,
+                });
               setLabInfo((_labInfo) => {
                 const _labs = [..._labInfo!];
                 const labIdx = _labs.findIndex((lab) => lab.id === labId);

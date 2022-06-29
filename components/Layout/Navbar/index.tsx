@@ -22,6 +22,7 @@ import { Auth } from "../../../types/Auth";
 import { ResponseError } from "../../../types/Responses";
 import { Informacion } from "./Item";
 import { me } from "../../../axios/User";
+import { showModal } from "../../Modal/showModal";
 
 const index = ({
   isAuth,
@@ -36,11 +37,21 @@ const index = ({
     async (form: HTMLFormElement): Promise<any> => {
       const formData = new FormData(form);
       if (!formData.has("username") || !formData.has("password"))
-        return alert("No puedes dejar ningún campo vacío. x");
+        return showModal({
+          icon: "error",
+          title: `No puedes dejar ningún campo vacío`,
+          buttons: "OK",
+          submitButtonText: "Entendido",
+        });
       const username = formData.get("username")!.toString().trim();
       const password = formData.get("password")!.toString().trim();
       if (!username || !password)
-        return alert("No puedes dejar ningún campo vacío. y");
+        return showModal({
+          icon: "error",
+          title: `No puedes dejar ningún campo vacío`,
+          buttons: "OK",
+          submitButtonText: "Entendido",
+        });
       const user = await login(username, password);
       if (user instanceof ResponseError) {
         // Clear, focus and red
@@ -51,20 +62,64 @@ const index = ({
         (usernameInput as HTMLInputElement).classList.add("border-red");
         (passwordInput as HTMLInputElement).classList.add("border-red");
         (usernameInput as HTMLInputElement).focus();
-        return alert(JSON.stringify(user));
+        return showModal({
+          icon: "error",
+          body: JSON.stringify(user),
+          buttons: "OK",
+          submitButtonText: "Entendido",
+        }); // TODO: Show real message
       }
       setAuth(user);
     },
     [setAuth]
   );
 
+  useEffect(() => {
+    const debounce = (fn: (args: any[]) => void) => {
+      let frame: number;
+      return (...params: any[]) => {
+        if (frame) {
+          cancelAnimationFrame(frame);
+        }
+        frame = requestAnimationFrame(() => {
+          // @ts-ignore
+          fn(...params);
+        });
+      };
+    };
+
+    const storeScroll = () => {
+      // document.documentElement.dataset.scroll = window.scrollY;
+      const nav = document.getElementById("nav") as HTMLDivElement;
+      if (window.scrollY === 0) nav.classList.add("glass");
+      else nav.classList.remove("glass");
+    };
+
+    if (router.pathname === "/") {
+      document.addEventListener("scroll", debounce(storeScroll), {
+        passive: true,
+      });
+      storeScroll();
+    }
+
+    return () => document.removeEventListener("scroll", debounce(storeScroll));
+  }, [router.pathname]);
+
   return (
-    <Disclosure as="nav" className="bg-white relative z-50 shadow-md">
+    <Disclosure
+      id="nav"
+      as="nav"
+      className={`bg-white z-50 shadow-md fixed inset-0 bottom-auto duration-500 ${
+        router.pathname === "/" && "glass"
+      }`}
+    >
       {({ open, close }) => (
         <>
           <div className="px-2 sm:px-6 lg:px-8">
-            <div className="relative flex items-center justify-between h-16">
-              <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
+            {/* <div className="relative flex items-center justify-between h-16"> TODO: Uncomment when sections */}
+            <div className="relative flex items-center justify-end h-16">
+              {/* <div className="absolute inset-y-0 left-0 flex items-center sm:hidden"> TODO: Uncomment when sections */}
+              <div className="absolute inset-y-0 left-0 items-center hidden">
                 <Disclosure.Button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-200">
                   <span className="sr-only">Open main menu</span>
                   {open ? (
@@ -74,17 +129,20 @@ const index = ({
                   )}
                 </Disclosure.Button>
               </div>
-              <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
+              {/* <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start"> TODO: Uncomment when sections */}
+              <div className="flex-1 items-center justify-center sm:items-stretch sm:justify-start hidden">
                 <div className="hidden sm:block sm:ml-6">
                   <div className="flex space-x-4">
-                    <Link href="/">
-                      <a
-                        className="bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 px-3 py-2 rounded-md text-sm font-semibold"
-                        onClick={() => close()}
-                      >
-                        Inicio
-                      </a>
-                    </Link>
+                    {router.pathname !== "/" && (
+                      <Link href="/">
+                        <a
+                          className="bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 px-3 py-2 rounded-md text-sm font-semibold"
+                          onClick={() => close()}
+                        >
+                          Inicio
+                        </a>
+                      </Link>
+                    )}
                     <Menu as="div" className="relative">
                       {({ open }) => (
                         <>
@@ -325,14 +383,16 @@ const index = ({
           <Transition isOpen={open}>
             <Disclosure.Panel className="sm:hidden">
               <div className="px-2 pt-2 pb-3 space-y-1">
-                <Link href="/">
-                  <a
-                    className="block bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 px-3 py-2 rounded-md text-base font-medium"
-                    onClick={() => close()}
-                  >
-                    Inicio
-                  </a>
-                </Link>
+                {router.pathname !== "/" && (
+                  <Link href="/">
+                    <a
+                      className="block bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 px-3 py-2 rounded-md text-base font-medium"
+                      onClick={() => close()}
+                    >
+                      Inicio
+                    </a>
+                  </Link>
+                )}
                 <Menu
                   as="div"
                   className="relative z-2 block bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 rounded-md text-base font-medium w-full"

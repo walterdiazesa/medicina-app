@@ -5,6 +5,22 @@ module.exports = {
   ],
   theme: {
     extend: {
+      colors: {
+        "teal-contrast": "#2A4152",
+      },
+      transitionDelay: {
+        2000: "2000ms",
+      },
+      animation: {
+        fade: "fadeIn 0.7s ease-in-out",
+        fadeorb: "fadeIn 1s ease-in-out",
+      },
+      keyframes: (theme) => ({
+        fadeIn: {
+          from: { opacity: 0 },
+          to: { opacity: 1 },
+        },
+      }),
       opacity: {
         15: "0.15",
       },

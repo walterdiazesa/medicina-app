@@ -19,3 +19,93 @@ body {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+.glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.orb {
+  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+  --tw-gradient-from: #99f6e4;
+  --tw-gradient-stops: var(--tw-gradient-from),
+    var(--tw-gradient-to, rgb(153 246 228 / 0));
+  --tw-gradient-to: #0d9488;
+  border-radius: 9999px;
+  position: absolute;
+}
+
+#orbtop {
+  min-height: 10rem;
+  min-width: 10rem;
+  animation-duration: 15s;
+  animation-name: orbtop;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+#orbfaq {
+  min-height: 17rem;
+  min-width: 20rem;
+  animation-duration: 20s;
+  animation-name: orbfaq;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  border-radius: 66% 34% 59% 41% / 30% 28% 72% 70%;
+}
+
+#btn_pricing_orb {
+  animation-duration: 15s;
+  animation-name: orb_pricing;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+#freetrial_section {
+  background: #15b8a6;
+  background: -webkit-radial-gradient(
+    farthest-corner at 0px 0px,
+    #99f6e4,
+    #15b8a6
+  );
+  background: -moz-radial-gradient(
+    farthest-corner at 0px 0px,
+    #99f6e4,
+    #15b8a6
+  );
+  background: radial-gradient(farthest-corner at 0px 0px, #99f6e4, #15b8a6);
+}
+
+@keyframes orbtop {
+  0% {
+    top: -1rem;
+    left: -7rem;
+  }
+  100% {
+    top: 0rem;
+    left: -3rem;
+  }
+}
+@keyframes orbfaq {
+  0% {
+    transform: translate(0, 0) rotate(0) scale(1);
+    border-radius: 66% 34% 59% 41% / 30% 28% 72% 70%;
+  }
+  100% {
+    transform: translate(60px, -30px) rotate(60deg) scale(1.15);
+    border-radius: 41% 59% 59% 41% / 30% 57% 43% 70%;
+  }
+}
+
+@keyframes orb_pricing {
+  to {
+    transform: translate(5px, -3px);
+  }
+  from {
+    transform: translate(-10px, 7px);
+  }
+}
