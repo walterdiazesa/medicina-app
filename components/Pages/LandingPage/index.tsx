@@ -39,7 +39,33 @@ const index = () => {
     };
     orbsPosition();
     window.addEventListener("resize", orbsPosition);
-    return () => window.removeEventListener("resize", orbsPosition);
+
+    let observer: IntersectionObserver;
+    if (window.IntersectionObserver) {
+      observer = new IntersectionObserver(
+        (entries, observer) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("animate-fade");
+              (entry.target as HTMLElement).style.opacity = "1";
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          rootMargin: "-50px",
+        }
+      );
+      document.querySelectorAll(".animate-on-scroll").forEach((element) => {
+        (element as HTMLElement).style.opacity = "0";
+        observer.observe(element);
+      });
+    }
+
+    return () => {
+      window.removeEventListener("resize", orbsPosition);
+      if (observer) observer.disconnect();
+    };
   }, []);
 
   return (
@@ -58,10 +84,10 @@ const index = () => {
             <h1 className="font-bold text-[3.25rem] leading-none sm:text-6xl">
               Administra tu laboratorio en un solo lugar
             </h1>
-            <p className="mt-2">
+            <p className="mt-2 text-justify">
               Un software de administración para laboratorio clínico de extremo
               a extremo: control de pagos y transformación de pruebas con los
-              más altos estándares de seguridad, estés donde estés
+              más altos estándares de seguridad, estés donde estés.
             </p>
             <div className="w-full flex justify-center my-4 items-center">
               <ButtonWithIcon
