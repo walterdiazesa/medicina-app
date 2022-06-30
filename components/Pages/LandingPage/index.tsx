@@ -78,6 +78,7 @@ const index = () => {
           className="absolute bg-gradient-to-br from-teal-200 to-teal-600"
         />
       </div>
+      <div className="absolute glass top-0 left-0 w-screen h-16" />
       <div className="glass min-h-screen">
         <div className="sm:flex w-full sm:min-h-[51rem] mb-2 sm:mb-0 p-5 animate-fade">
           <div className="sm:w-1/2 flex flex-col items-center justify-center p-4">
