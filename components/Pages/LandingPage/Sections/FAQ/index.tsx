@@ -37,11 +37,11 @@ const index = () => {
       <h1 className="font-bold text-2xl">Preguntas más frecuentes</h1>
       <div className="my-4">
         {FAQS.map(({ q, a }, index) => (
-          <Menu key={index} as="div" className="my-3 ring-0">
+          <Menu key={index} as="div" className="my-3 outline-none">
             {({ open }) => (
               <>
                 <Menu.Button
-                  className={`w-full flex items-center justify-between px-8 py-3 bg-gray-200 hover:bg-gray-300 ring-0 ${
+                  className={`w-full flex items-center justify-between px-8 py-3 bg-gray-200 hover:bg-gray-300 outline-none ${
                     open ? "rounded-t-md border-b-2" : "rounded-md"
                   } cursor-pointer border-b-gray-800 border-opacity-5`}
                 >
@@ -51,7 +51,7 @@ const index = () => {
                 <Transition isOpen={open}>
                   <Menu.Items
                     static
-                    className="origin-top w-full rounded-b-md shadow-sm py-1 bg-gray-100 ring-0"
+                    className="origin-top w-full rounded-b-md shadow-sm py-1 bg-gray-100 outline-none"
                   >
                     <p
                       className="text-left px-8"

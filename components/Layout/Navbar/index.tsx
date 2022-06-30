@@ -91,8 +91,13 @@ const index = ({
     const storeScroll = () => {
       // document.documentElement.dataset.scroll = window.scrollY;
       const nav = document.getElementById("nav") as HTMLDivElement;
-      if (window.scrollY === 0) nav.classList.add("glass");
-      else nav.classList.remove("glass");
+      if (window.scrollY === 0) {
+        nav.classList.add("glass");
+        nav.classList.remove("duration-500");
+      } else {
+        nav.classList.remove("glass");
+        nav.classList.add("duration-500");
+      }
     };
 
     if (router.pathname === "/") {
