@@ -91,8 +91,8 @@ const index = ({
     const storeScroll = () => {
       // document.documentElement.dataset.scroll = window.scrollY;
       const nav = document.getElementById("nav") as HTMLDivElement;
-      if (window.scrollY <= 0) nav.classList.add("glass");
-      else nav.classList.remove("glass");
+      if (window.scrollY <= 3) nav.classList.add("bg-transparent");
+      else nav.classList.remove("bg-transparent");
     };
 
     if (router.pathname === "/") {
@@ -110,7 +110,7 @@ const index = ({
       id="nav"
       as="nav"
       className={`bg-white z-50 shadow-md fixed inset-0 bottom-auto duration-500 ${
-        router.pathname === "/" && "glass"
+        router.pathname === "/" && "bg-transparent"
       }`}
     >
       {({ open, close }) => (
