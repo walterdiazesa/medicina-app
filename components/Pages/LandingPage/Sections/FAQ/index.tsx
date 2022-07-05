@@ -6,10 +6,10 @@ import Transition from "../../../../Transition";
 const FAQS: { q: string; a: string }[] = [
   {
     q: "¿Quién necesita esto?",
-    a: "Cualquier laboratorio de química seca o hematología que esté en búsqueda de automatizar sus procesos, centralizar su información y mejorar su productividad.",
+    a: "Cualquier laboratorio clínico que esté en búsqueda de automatizar sus procesos, centralizar su información y mejorar su productividad.",
   },
   {
-    q: "CHEMs compatibles",
+    q: "Analizadores compatibles",
     a: `<ul class="list-disc">
           <li>Fujifilm NX500</li>
           <li><b>(próximamente)</b> Fujifilm NX600</li>

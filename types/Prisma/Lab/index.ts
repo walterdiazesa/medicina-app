@@ -13,12 +13,21 @@ export type Lab = {
   img: string;
   installer: string | null;
   rsaPrivateKey: string;
+  preferences: Partial<LabPreferences>;
   createdAt: Date;
   userIds: string[];
   ownerIds: string[];
+};
+export type LabPreferences = {
+  useTestCustomId: boolean;
+  leadingZerosWhenCustomId: number;
 };
 export interface LabWithEmployeeInfo extends Lab {
   Owners: User[];
   Users: User[];
   employees: UserType[];
 }
+
+export type LabSelect = {
+  [key in keyof Partial<Lab>]: boolean;
+};

@@ -2,7 +2,7 @@
 // @ts-nocheck
 import React, { useEffect } from "react";
 import { Test } from "../../../types/Prisma/Test";
-import { getTestItemName } from "../../../types/Test";
+import { getTestId, getTestItemName } from "../../../types/Test";
 import {
   Page,
   Text,
@@ -145,7 +145,7 @@ const Document = ({ test }: { test: Test }) => {
           }}
         >
           <View style={{ flex: 1 }}>
-            <ReportItem element="Solicitud" value={test.id} />
+            <ReportItem element="Solicitud" value={getTestId(test)} />
             <ReportItem element="Paciente" value={test.patient!.name} />
             <ReportItem element="ID" value={test.patient!.dui} />
             <ReportItem element="Sexo" value={test.sex} />

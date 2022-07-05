@@ -1,3 +1,5 @@
+import { Lab, Test } from "../Prisma";
+
 const testItemKeyValue: {
   [key: string]: { name: string; desc: string; group: string };
 } = {
@@ -165,5 +167,18 @@ export const getTestItemName = (test: string) => {
       desc: "unknown property",
       group: "unknown property",
     }
+  );
+};
+
+export const normalizeTestCustomId = (
+  customId: number,
+  leadingZeros: number = 6
+) => String(customId).padStart(leadingZeros, "0");
+
+export const getTestId = (test: Test) => {
+  if (!test.lab?.preferences.useTestCustomId) return test.id!;
+  return normalizeTestCustomId(
+    test.customId,
+    test.lab!.preferences.leadingZerosWhenCustomId
   );
 };

@@ -1,4 +1,5 @@
 import { ChevronDoubleDownIcon } from "@heroicons/react/outline";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useLayoutEffect } from "react";
@@ -91,14 +92,16 @@ const index = () => {
               más altos estándares de seguridad, estés donde estés.
             </p>
             <div className="w-full flex justify-center my-4 items-center">
-              <ButtonWithIcon
-                text="Ver precios"
-                className="py-3 px-8"
-                name="btn_pricing"
-                textClassName="ml-0"
-              >
-                <></>
-              </ButtonWithIcon>
+              <Link href="/pricing">
+                <ButtonWithIcon
+                  text="Ver precios"
+                  className="py-3 px-8"
+                  name="btn_pricing"
+                  textClassName="ml-0"
+                >
+                  <></>
+                </ButtonWithIcon>
+              </Link>
               <Link href="/register">
                 <span className="ml-6 text-teal-500 font-semibold cursor-pointer hover:text-teal-600">
                   Crea tu laboratorio
@@ -140,4 +143,12 @@ const index = () => {
   );
 };
 
-export default index;
+export async function getStaticProps() {
+  return {
+    props: {},
+  };
+}
+
+export default dynamic(() => Promise.resolve(index), {
+  ssr: false,
+});

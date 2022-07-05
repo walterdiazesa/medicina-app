@@ -20,6 +20,8 @@ import { useRouter } from "next/router";
 import { ResponseError } from "../../types/Responses";
 import { Input, Modal } from "../../components";
 import { showModal } from "../../components/Modal/showModal";
+import { normalizeTestCustomId } from "../../types/Test";
+import dynamic from "next/dynamic";
 
 interface RealTimeTest extends Test {
   justInTime?: boolean;
@@ -34,7 +36,9 @@ const index = () => {
   const queryTests = useMemo(() => {
     return tests && testQuery
       ? tests.filter((test) => {
-          if (test.id!.normalizeQuery().includes(testQuery.normalizeQuery()))
+          if (test.id!.toLowerCase().includes(testQuery.toLowerCase()))
+            return true;
+          if (normalizeTestCustomId(test.customId).includes(testQuery.trim()))
             return true;
           if (
             test.patient &&
@@ -217,4 +221,6 @@ const index = () => {
   );
 };
 
-export default React.memo(index);
+export default dynamic(() => Promise.resolve(React.memo(index)), {
+  ssr: false,
+});

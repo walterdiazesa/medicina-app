@@ -11,6 +11,7 @@ export interface TestItem {
 
 export interface Test {
   id?: string;
+  customId: number;
   labId: string;
   lab?: Lab;
   issuerId: string;

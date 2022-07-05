@@ -26,6 +26,7 @@ const index = ({
               height="462"
               alt="security"
               objectFit="contain"
+              priority
             />
           </div>
         </Transition>
@@ -39,6 +40,7 @@ const index = ({
               height="462"
               alt="cloud"
               objectFit="contain"
+              priority
             />
           </div>
         </Transition>
@@ -52,6 +54,7 @@ const index = ({
               height="462"
               alt="app"
               objectFit="contain"
+              priority
             />
           </div>
         </Transition>

@@ -25,16 +25,20 @@ import {
   PaperAirplaneIcon,
   PencilIcon,
   PhoneIcon,
+  QrcodeIcon,
   TrashIcon,
   UserIcon,
   XCircleIcon,
 } from "@heroicons/react/outline";
 import { Document, Preview } from "../../../components/PDF";
-// @ts-ignore
-import { usePDF } from "@react-pdf/renderer/lib/react-pdf.browser.cjs";
+import {
+  usePDF,
+  PDFViewer,
+  // @ts-ignore
+} from "@react-pdf/renderer/lib/react-pdf.browser.cjs";
 import { Auth } from "../../../types/Auth";
 import NextImage from "next/image";
-import { getTestItemName } from "../../../types/Test";
+import { getTestId, getTestItemName } from "../../../types/Test";
 import {
   ButtonWithIcon,
   Input,
@@ -47,6 +51,8 @@ import { ResponseError } from "../../../types/Responses";
 import { Patient } from "../../../types/Prisma";
 import { Dialog } from "@headlessui/react";
 import { showModal } from "../../../components/Modal/showModal";
+import { getLaboratory } from "../../../axios/Lab";
+import { Document as RenderDocument, Page as RenderPage } from "react-pdf";
 
 type SearchListItem = {
   value: number | string;
@@ -168,12 +174,28 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   //#endregion
 
   useEffect(() => {
-    if (auth && test) {
-      isTestAuthorized(test.id!).then((authorized) =>
-        setIsAuthorized(authorized)
-      );
+    if (
+      Object.keys(router.query).length &&
+      (auth || router.query.access) &&
+      test
+    ) {
+      getLaboratory({
+        id: test.lab!.id,
+        fields: { img: true, preferences: true },
+        ...(router.query.access && {
+          access: router.query.access as string,
+          test: test.id!,
+        }),
+      }).then((labData) => {
+        if (labData)
+          test.lab = {
+            ...test.lab!,
+            preferences: { ...test.lab!.preferences, ...labData.preferences },
+          };
+        setIsAuthorized(!!labData);
+      });
     }
-  }, [auth, test]);
+  }, [auth, test, router]);
 
   const [testPDF, updatePDF] = usePDF({
     document:
@@ -181,13 +203,21 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   });
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => test && updatePDF(), [test, pdfState]);
+  useEffect(() => test && updatePDF(), [test, pdfState, router]);
 
   if (isAuthorized === undefined)
     return (
       <div className="min-w-full min-h-screen-navbar flex justify-center items-center -translate-y-16">
         <Spinner size="big" color="text-gray-300" />
       </div>
+    );
+
+  if (!isAuthorized && router.query.access)
+    return (
+      <h1 className="mt-8 text-xl font-semibold text-red-400 flex items-center justify-center min-w-full">
+        <QrcodeIcon className="h-6 w-6 mr-2" />
+        Código de acceso no válido.
+      </h1>
     );
 
   if (!isAuthorized)
@@ -202,7 +232,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
     return (
       <h1 className="mt-8 text-xl font-semibold text-gray-400 animate-pulse flex items-center justify-center min-w-full">
         <Spinner pulse color="text-gray-400" />
-        Generating test...
+        Generando test...
       </h1>
     );
 
@@ -215,6 +245,23 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
     );
 
   // const [testPDF, _] = useState({ loading: false, error: "", url: "/" });
+
+  if (router.query.access && testPDF.loading)
+    return (
+      <h1 className="mt-8 text-xl font-semibold text-gray-400 animate-pulse flex items-center justify-center min-w-full">
+        <Spinner pulse color="text-gray-400" />
+        Generando test...
+      </h1>
+    );
+
+  if (router.query.access && testPDF.url) {
+    return (
+      <embed
+        src={testPDF.url}
+        className="inset-0 w-screen h-screen absolute z-50"
+      />
+    );
+  }
 
   return (
     <>
@@ -476,7 +523,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
       </Modal>
       <div className={`max-w-6xl my-8 ${!test.validator && "mb-16"}`}>
         <h1 className="text-2xl sm:text-4xl font-mono text-gray-800 font-bold">
-          {test.id}
+          {getTestId(test)}
           {auth!["sub-lab"].length > 1 && (
             <span className="ml-2 text-base font-normal text-gray-600 font-sans hidden sm:block">
               {new Date(test.date).format("DD/MM/YYYY HH:MM A")}
@@ -765,7 +812,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                 if (testPDF.loading || !test || !!testPDF.error) return;
                 const a = document.createElement("a");
                 a.href = testPDF.url!;
-                a.download = test.id!;
+                a.download = getTestId(test);
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
