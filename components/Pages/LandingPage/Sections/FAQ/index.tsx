@@ -11,9 +11,9 @@ const FAQS: { q: string; a: string }[] = [
   {
     q: "Analizadores compatibles",
     a: `<ul class="list-disc">
-          <li>Fujifilm NX500</li>
-          <li><b>(próximamente)</b> Fujifilm NX600</li>
-          <li><b>(próximamente)</b> Fujifilm NX700</li>
+          <li>DRI-CHEM NX500 | Fujifilm</li>
+          <li><b>(próximamente)</b> DRI-CHEM NX600 | Fujifilm</li>
+          <li><b>(próximamente)</b> DRI-CHEM NX700 | Fujifilm</li>
         </ul>`,
   },
   {

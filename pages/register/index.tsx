@@ -18,6 +18,7 @@ import { auth as tryAuth } from "../../axios/Auth";
 import { Auth } from "../../types/Auth";
 import { useRouter } from "next/router";
 import { showModal } from "../../components/Modal/showModal";
+import { unexpectedError } from "../../utils/Error";
 
 const index = ({
   auth,
@@ -71,13 +72,7 @@ const index = ({
           }
           const { created, data } = await createLaboratory(labFields);
 
-          if (!created)
-            return showModal({
-              icon: "error",
-              body: JSON.stringify(data),
-              buttons: "OK",
-              submitButtonText: "Entendido",
-            }); // TODO: Show real message
+          if (!created) return unexpectedError(data);
 
           const auth = await tryAuth();
           setAuth(auth);

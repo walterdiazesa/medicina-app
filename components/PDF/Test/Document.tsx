@@ -85,7 +85,7 @@ const ReportItem = ({
   );
 };
 
-const Document = ({ test }: { test: Test }) => {
+const Document = ({ test, qr }: { test: Test; qr?: string }) => {
   return (
     <PDFDocument>
       <Page
@@ -401,28 +401,48 @@ const Document = ({ test }: { test: Test }) => {
               alignItems: "baseline",
             }}
           >
-            <Image
+            {test.validator?.signature &&
+              test.validator.signature.includes(
+                "user-signatures.s3.filebase.com"
+              ) && (
+                <Image
+                  style={{
+                    flex: 1,
+                    objectFit: "contain",
+                    maxWidth: "3cm",
+                    maxHeight: "1.5cm",
+                    minWidth: "3cm",
+                    minHeight: "1.5cm",
+                  }}
+                  src={test.validator.signature}
+                />
+              )}
+            {test.validator?.stamp &&
+              test.validator.stamp.includes(
+                "user-signatures.s3.filebase.com"
+              ) && (
+                <Image
+                  style={{
+                    flex: 1,
+                    objectFit: "contain",
+                    maxWidth: "6cm",
+                    maxHeight: "2.5cm",
+                    minWidth: "6cm",
+                    minHeight: "2.5cm",
+                    marginLeft: "0.4cm",
+                  }}
+                  src={test.validator.stamp}
+                />
+              )}
+            <View
               style={{
                 flex: 1,
                 objectFit: "contain",
-                maxWidth: "3cm",
-                maxHeight: "1.5cm",
-                minWidth: "3cm",
-                minHeight: "1.5cm",
-              }}
-              src="/test-pdf/firma.png"
-            />
-            <Image
-              style={{
-                flex: 1,
-                objectFit: "contain",
-                maxWidth: "6cm",
+                maxWidth: "0.1mm",
                 maxHeight: "2.5cm",
-                minWidth: "6cm",
+                minWidth: "0.1mm",
                 minHeight: "2.5cm",
-                marginLeft: "0.4cm",
               }}
-              src="/test-pdf/sello.png"
             />
           </View>
           <Text
@@ -444,6 +464,38 @@ const Document = ({ test }: { test: Test }) => {
             Persona validadora de esta solicitud
           </Text>
         </View>
+        {test.lab?.preferences.useQR && qr && (
+          <View
+            style={{
+              position: "absolute",
+              bottom: "7mm",
+              left: 0,
+              right: "5mm",
+            }}
+            fixed
+          >
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "row-reverse",
+                alignItems: "flex-end",
+              }}
+            >
+              <Image
+                src={qr}
+                style={{
+                  flex: 1,
+                  objectFit: "contain",
+                  maxWidth: "3cm",
+                  maxHeight: "3cm",
+                  minWidth: "3cm",
+                  minHeight: "3cm",
+                  alignSelf: "flex-end",
+                }}
+              />
+            </View>
+          </View>
+        )}
       </Page>
     </PDFDocument>
   );

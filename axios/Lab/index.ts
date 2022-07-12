@@ -83,7 +83,7 @@ export const patchUsers = async (
       withCredentials: true,
     }
   );
-  if (status !== 200) return data as ResponseError;
+  if (status !== 200) return new ResponseError(data);
   return type ? (data as UserType) : (data as boolean);
 };
 
@@ -95,5 +95,5 @@ export const updateOwner = async (body: {
   const { status, data } = await api.patch("/labs/owners", body, {
     withCredentials: true,
   });
-  return status === 200 ? (data as boolean) : (data as ResponseError);
+  return status === 200 ? (data as boolean) : new ResponseError(data);
 };

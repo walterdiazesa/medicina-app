@@ -22,6 +22,7 @@ import { Auth } from "../../../types/Auth";
 import Transition from "../../Transition";
 import Dropdown from "../../Dropdown";
 import { normalizeTestCustomId } from "../../../types/Test";
+import { unexpectedError } from "../../../utils/Error";
 
 const index = ({
   lab,
@@ -44,24 +45,18 @@ const index = ({
   const [useCustomTestId, setUseCustomTestId] = useState(
     !!lab.preferences.useTestCustomId
   );
+  const [useQR, setUseQR] = useState(!!lab.preferences.useQR);
 
   useEffect(() => {
     if (useCustomTestId === Boolean(lab.preferences.useTestCustomId)) return;
     (async () => {
       setUpdatingLabPreferences(true);
       const labRequest = await updateLab(lab.id, {
-        preferences: {
-          useTestCustomId: !!useCustomTestId,
-        },
+        preferences: { ...lab.preferences, useTestCustomId: !!useCustomTestId },
       });
       setUpdatingLabPreferences(false);
       if (labRequest instanceof ResponseError)
-        return showModal({
-          icon: "error",
-          body: JSON.stringify(labRequest),
-          buttons: "OK",
-          submitButtonText: "Entendido",
-        }); // TODO: Show real message
+        return unexpectedError(labRequest);
       setLabInfo((_labInfo) => {
         const newLabInfo = [..._labInfo!];
         newLabInfo[labIdx].preferences.useTestCustomId = useCustomTestId;
@@ -71,6 +66,26 @@ const index = ({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [useCustomTestId]);
+
+  useEffect(() => {
+    if (useQR === Boolean(lab.preferences.useQR)) return;
+    (async () => {
+      setUpdatingLabPreferences(true);
+      const labRequest = await updateLab(lab.id, {
+        preferences: { ...lab.preferences, useQR },
+      });
+      setUpdatingLabPreferences(false);
+      if (labRequest instanceof ResponseError)
+        return unexpectedError(labRequest);
+      setLabInfo((_labInfo) => {
+        const newLabInfo = [..._labInfo!];
+        newLabInfo[labIdx].preferences.useQR = useQR;
+        return newLabInfo;
+      });
+    })();
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useQR]);
 
   const [loadingInviteEmployee, setLoadingInviteEmployee] = useState(false);
 
@@ -146,12 +161,7 @@ const index = ({
             img: publicAssetUploadURL.split("?")[0],
           });
           if (labRequest instanceof ResponseError)
-            return showModal({
-              icon: "error",
-              body: JSON.stringify(labRequest),
-              buttons: "OK",
-              submitButtonText: "Entendido",
-            }); // TODO: Show real message
+            return unexpectedError(labRequest);
           setLabInfo((_labInfo) => {
             const _labs = [..._labInfo!];
             _labs[labIdx].img = labRequest!.img;
@@ -247,17 +257,13 @@ const index = ({
               setUpdatingLabPreferences(true);
               const labRequest = await updateLab(lab.id, {
                 preferences: {
+                  ...lab.preferences,
                   leadingZerosWhenCustomId,
                 },
               });
               setUpdatingLabPreferences(false);
               if (labRequest instanceof ResponseError)
-                return showModal({
-                  icon: "error",
-                  body: JSON.stringify(labRequest),
-                  buttons: "OK",
-                  submitButtonText: "Entendido",
-                }); // TODO: Show real message
+                return unexpectedError(labRequest);
               setLabInfo((_labInfo) => {
                 const newLabInfo = [..._labInfo!];
                 newLabInfo[labIdx].preferences.leadingZerosWhenCustomId =
@@ -268,6 +274,27 @@ const index = ({
           />
         </div>
       </Transition>
+      <div className="flex items-center my-2">
+        <p className="font-semibold sm:mr-4">Usar código QR:</p>
+        <Switch.Group>
+          <div className="flex items-center">
+            <Switch
+              checked={useQR}
+              onChange={() => setUseQR((_useQR) => !_useQR)}
+              className={`${updatingLabPreferences && "pointer-events-none"} ${
+                useQR ? "bg-teal-500" : "bg-gray-200"
+              } focus:outline-none relative inline-flex h-6 w-11 items-center rounded-full transition-colors`}
+            >
+              <span
+                className={`${
+                  useQR ? "translate-x-6" : "translate-x-1"
+                } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+              />
+            </Switch>
+          </div>
+        </Switch.Group>
+      </div>
+
       <h1 className="text-lg font-semibold my-2">Empleados</h1>
       <div className="flex mb-3">
         <Input
@@ -331,20 +358,15 @@ const index = ({
                 return _labs;
               });
             } else {
-              if (data.hasOwnProperty("error")) {
-                if ((data as ResponseError)["error"].key === "redundant") {
+              if (data instanceof ResponseError) {
+                if (data.key === "redundant") {
                   showModal({
                     icon: "warning",
                     body: `El empleado con correo "<b>${emailInput.value.trim()}</b>" ya forma parte de este laboratorio`,
                     timer: 2200,
                   });
                 } else {
-                  showModal({
-                    icon: "error",
-                    body: JSON.stringify(data),
-                    buttons: "OK",
-                    submitButtonText: "Entendido",
-                  }); // TODO: Show real message
+                  unexpectedError(data);
                 }
               } else {
                 showModal({

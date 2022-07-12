@@ -6,6 +6,7 @@ const nextConfig = {
       "avatars.dicebear.com",
       "medicina-app.vercel.app",
       "public-files.s3.filebase.com",
+      "user-signatures.s3.filebase.com",
     ],
   },
 };

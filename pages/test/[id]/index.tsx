@@ -4,6 +4,8 @@ import { GetStaticProps } from "next";
 import { useRouter } from "next/router";
 import {
   get,
+  getAccessLink,
+  getValidatorSignatures,
   isTestAuthorized,
   put,
   requestValidation,
@@ -30,7 +32,7 @@ import {
   UserIcon,
   XCircleIcon,
 } from "@heroicons/react/outline";
-import { Document, Preview } from "../../../components/PDF";
+import { Document } from "../../../components/PDF";
 import {
   usePDF,
   PDFViewer,
@@ -52,7 +54,7 @@ import { Patient } from "../../../types/Prisma";
 import { Dialog } from "@headlessui/react";
 import { showModal } from "../../../components/Modal/showModal";
 import { getLaboratory } from "../../../axios/Lab";
-import { Document as RenderDocument, Page as RenderPage } from "react-pdf";
+import { unexpectedError } from "../../../utils/Error";
 
 type SearchListItem = {
   value: number | string;
@@ -197,13 +199,85 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
     }
   }, [auth, test, router]);
 
+  const [testQR, setTestQR] = useState("");
+
+  /* const [testSignatures, setTestSignatures] = useState<{
+    signature: string;
+    stamp: string;
+  } | null>(); */
+
   const [testPDF, updatePDF] = usePDF({
     document:
-      test && test.lab && test.patient ? <Document test={test!} /> : <></>,
+      test && test.lab && test.patient ? (
+        <Document test={test!} qr={testQR} />
+      ) : (
+        <></>
+      ),
   });
 
+  useEffect(() => {
+    if (!test) return;
+    if (
+      test.validator &&
+      ((test.validator.signature &&
+        !test.validator.signature.includes(
+          "user-signatures.s3.filebase.com"
+        )) ||
+        (test.validator.stamp &&
+          !test.validator.stamp.includes("user-signatures.s3.filebase.com")))
+      // && testSignatures === undefined
+    )
+      (async () => {
+        const validatorSignatures = await getValidatorSignatures(
+          test.id!,
+          router.query.access as string | undefined
+        );
+        if (validatorSignatures instanceof ResponseError)
+          return unexpectedError(validatorSignatures);
+        /* if (validatorSignatures instanceof ResponseError)
+          setTestSignatures(null);
+        else setTestSignatures(validatorSignatures); */
+        test.validator = { ...test.validator!, ...validatorSignatures };
+        updatePDF();
+      })();
+    if (test.lab && test.lab.preferences.useQR && !testQR)
+      (async () => {
+        let accessLink: string;
+        if (router.query.access) {
+          accessLink = window.location.href;
+        } else {
+          const _accessLink = await getAccessLink(test.id!);
+          if (_accessLink instanceof ResponseError)
+            return unexpectedError(_accessLink);
+          accessLink = _accessLink;
+        }
+        const { default: QRCodeStyling } = await import("qr-code-styling");
+        const qrCode = new QRCodeStyling({
+          width: 300,
+          height: 300,
+          type: "svg",
+          data: accessLink,
+          image: "https://public-files.s3.filebase.com/logochemistry.png",
+          dotsOptions: {
+            color: "#000000",
+            type: "rounded",
+          },
+          backgroundOptions: {
+            color: "#ffffff",
+          },
+          imageOptions: {
+            crossOrigin: "anonymous",
+            margin: 5,
+          },
+        });
+        // qrCode.append(document.getElementById("qr_canvas")!);
+        const rawPng = await qrCode.getRawData("png");
+        if (rawPng) setTestQR(URL.createObjectURL(rawPng));
+      })();
+  }, [test, pdfState, router, isAuthorized, testQR, test?.validator]);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => test && updatePDF(), [test, pdfState, router]);
+  useEffect(() => test && updatePDF(), [test, pdfState, router, testQR]);
 
   if (isAuthorized === undefined)
     return (
@@ -286,12 +360,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
           });
           setUpdatingRemarkLoading(false);
           if (testData instanceof ResponseError)
-            return showModal({
-              icon: "error",
-              body: JSON.stringify(testData),
-              buttons: "OK",
-              submitButtonText: "Entendido",
-            }); // TODO: Show real message
+            return unexpectedError(testData);
           test.remark = testData?.remark;
           forceUpdate();
         }}
@@ -335,13 +404,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
         submitCallback={async (items: Patient) => {
           items["dateBorn"] = new Date(items["dateBorn"]);
           const patient = await create(items);
-          if (patient instanceof ResponseError)
-            return showModal({
-              icon: "error",
-              body: JSON.stringify(patient),
-              buttons: "OK",
-              submitButtonText: "Entendido",
-            }); // TODO: Show real message
+          if (patient instanceof ResponseError) return unexpectedError(patient);
           const selectedNewPatient = {
             value: patient.id,
             text: `${patient.dui}, ${patient.name}, ${patient.sex}`,
@@ -379,12 +442,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
             issuerId: saveTester.current,
           });
           if (testData instanceof ResponseError)
-            return showModal({
-              icon: "error",
-              body: JSON.stringify(testData),
-              buttons: "OK",
-              submitButtonText: "Entendido",
-            }); // TODO: Show real message
+            return unexpectedError(testData);
           test.issuer = testData!.issuer;
           forceUpdate();
         }}
@@ -486,12 +544,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                     );
                     setSendingValidatorLoading(false);
                     if (testValidationResponse instanceof ResponseError)
-                      return showModal({
-                        icon: "error",
-                        body: JSON.stringify(testValidationResponse),
-                        buttons: "OK",
-                        submitButtonText: "Entendido",
-                      }); // TODO: Show real message
+                      return unexpectedError(testValidationResponse);
                     showModal({
                       icon: "success",
                       body: "Se ha notificado al usuario correctamente",
@@ -522,6 +575,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
         </div>
       </Modal>
       <div className={`max-w-6xl my-8 ${!test.validator && "mb-16"}`}>
+        <div id="qr_canvas"></div>
         <h1 className="text-2xl sm:text-4xl font-mono text-gray-800 font-bold">
           {getTestId(test)}
           {auth!["sub-lab"].length > 1 && (
@@ -592,12 +646,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                       });
                       setPatientSavingLoading(false);
                       if (testData instanceof ResponseError)
-                        return showModal({
-                          icon: "error",
-                          body: JSON.stringify(testData),
-                          buttons: "OK",
-                          submitButtonText: "Entendido",
-                        }); // TODO: Show real message
+                        return unexpectedError(testData);
                       test.patient = testData?.patient;
                       forceUpdate();
                       //setPatients([]); // just for forceRerender
@@ -678,9 +727,9 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
             ) : (
               <>
                 <span className="sm:flex items-center mx-1 font-normal">
-                  {test.remark.text}{" "}
-                  <span className="text-gray-400">
-                    (Observación hecha por: {test.remark.by})
+                  {test.remark.text}
+                  <span className="ml-1 text-gray-400">
+                    &#40;Observación hecha por: {test.remark.by}&#41;
                   </span>
                   <span className="inline-flex translate-y-1 sm:translate-y-0">
                     {updatingRemarkLoading ? (
@@ -706,12 +755,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                           });
                           setDeletingRemarkLoading(false);
                           if (testData instanceof ResponseError)
-                            return showModal({
-                              icon: "error",
-                              body: JSON.stringify(testData),
-                              buttons: "OK",
-                              submitButtonText: "Entendido",
-                            }); // TODO: Show real message
+                            return unexpectedError(testData);
                           test.remark = testData?.remark;
                           forceUpdate();
                         }}
@@ -772,12 +816,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                       });
                       setValidating(false);
                       if (testData instanceof ResponseError)
-                        return showModal({
-                          icon: "error",
-                          body: JSON.stringify(testData),
-                          buttons: "OK",
-                          submitButtonText: "Entendido",
-                        }); // TODO: Show real message
+                        return unexpectedError(testData);
                       test.validator = testData!.validator;
                       test.validated = testData!.validated;
                       forceUpdate();
@@ -803,13 +842,29 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
           ) : (
             <button
               className={`w-full sm:w-auto mx-auto sm:mx-0 rounded-sm bg-red-500${
-                !!(testPDF.loading || !test || !!testPDF.error)
+                !!(
+                  testPDF.loading ||
+                  !test ||
+                  !!testPDF.error ||
+                  (test.lab?.preferences.useQR && !testQR)
+                )
                   ? ""
                   : " hover:bg-red-700 hover:scale-105"
               } px-6 py-2 shadow-md my-2 transition duration-100 flex items-center justify-center text-white`}
-              disabled={testPDF.loading || !test || !!testPDF.error}
+              disabled={
+                testPDF.loading ||
+                !test ||
+                !!testPDF.error ||
+                (test.lab?.preferences.useQR && !testQR)
+              }
               onClick={() => {
-                if (testPDF.loading || !test || !!testPDF.error) return;
+                if (
+                  testPDF.loading ||
+                  !test ||
+                  !!testPDF.error ||
+                  (test.lab?.preferences.useQR && !testQR)
+                )
+                  return;
                 const a = document.createElement("a");
                 a.href = testPDF.url!;
                 a.download = getTestId(test);
@@ -818,7 +873,9 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                 document.body.removeChild(a);
               }}
             >
-              {testPDF.loading || !test ? (
+              {testPDF.loading ||
+              !test ||
+              (test.lab?.preferences.useQR && !testQR) ? (
                 <div className="animate-pulse flex items-center">
                   <Spinner pulse /> Generando...
                 </div>

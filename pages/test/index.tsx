@@ -22,6 +22,7 @@ import { Input, Modal } from "../../components";
 import { showModal } from "../../components/Modal/showModal";
 import { normalizeTestCustomId } from "../../types/Test";
 import dynamic from "next/dynamic";
+import { unexpectedError } from "../../utils/Error";
 
 interface RealTimeTest extends Test {
   justInTime?: boolean;
@@ -198,12 +199,7 @@ const index = () => {
                           if (!deleteTestConfirm) return;
                           const isDeleted = await deleteTest(test.id!);
                           if (isDeleted instanceof ResponseError)
-                            return showModal({
-                              icon: "error",
-                              body: JSON.stringify(isDeleted),
-                              buttons: "OK",
-                              submitButtonText: "Entendido",
-                            }); // TODO: Show real message
+                            return unexpectedError(isDeleted);
                           setTests((_tests) =>
                             _tests!.filter(({ id }) => id !== test.id)
                           );

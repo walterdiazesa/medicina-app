@@ -30,9 +30,14 @@ export async function me() {
   return data as User;
 }
 
-export async function updateMe(body: Partial<User>) {
+export async function updateMe(body: Partial<User> | FormData) {
   const { status, data } = await api.patch("/users/me", body, {
     withCredentials: true,
+    ...(body instanceof FormData && {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
   });
   return status === 200 ? (data as User) : new ResponseError(data);
 }

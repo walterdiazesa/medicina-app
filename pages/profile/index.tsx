@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import {
   DownloadIcon,
+  FingerPrintIcon,
   KeyIcon,
   UserIcon,
   XCircleIcon,
@@ -21,6 +22,7 @@ import { listen, unListen } from "../../socketio";
 import { Auth } from "../../types/Auth";
 import { Lab, User } from "../../types/Prisma";
 import { ResponseError } from "../../types/Responses";
+import { unexpectedError } from "../../utils/Error";
 
 const index = ({
   auth,
@@ -70,7 +72,7 @@ const index = ({
   );
 
   return (
-    <div className="mt-2 md:mt-8 max-w-6xl">
+    <div className="my-2 md:my-8 max-w-6xl">
       <h1 className="text-lg font-semibold mb-2">Instaladores</h1>
       {installers === undefined ? (
         <p className="text-gray-500 animate-pulse flex items-center">
@@ -189,12 +191,7 @@ const index = ({
                     profileImg: publicAssetUploadURL.split("?")[0],
                   });
                   if (user instanceof ResponseError)
-                    return showModal({
-                      icon: "error",
-                      body: JSON.stringify(user),
-                      buttons: "OK",
-                      submitButtonText: "Entendido",
-                    }); // TODO: Show real message
+                    return unexpectedError(user);
                   if (!profile) return;
                   setProfile((_profile) => ({
                     ..._profile!,
@@ -207,6 +204,96 @@ const index = ({
                     );
                 }}
               />
+
+              <div className="my-4">
+                <p>Firma:</p>
+                {profile.signature && (
+                  <div className="my-2 w-[300px] h-[150px] relative">
+                    <Image
+                      src={profile.signature}
+                      alt="user_signature"
+                      width={300}
+                      height={150}
+                      objectFit="fill"
+                      priority
+                      quality={100}
+                    />
+                  </div>
+                )}
+                <Attachment
+                  key={profile.signature}
+                  label={`${profile.signature ? "Actualiza" : "Sube"} tu firma`}
+                  className="my-1"
+                  iconWhenAttached={
+                    <FingerPrintIcon className="w-8 h-8 text-gray-400 group-hover:text-gray-600 animate-pulse" />
+                  }
+                  onFileAttached={async (file) => {
+                    if (!file.type.startsWith("image"))
+                      return showModal({
+                        icon: "error",
+                        title: "La firma tiene que ser un archivo de imagen.",
+                        timer: 1500,
+                      });
+
+                    // const signature = await toBase64(file);
+                    const signatureFormData = new FormData();
+                    signatureFormData.append("signature", file);
+                    const user = await updateMe(signatureFormData);
+                    if (user instanceof ResponseError)
+                      return unexpectedError(user);
+                    if (!profile) return;
+                    setProfile((_profile) => ({
+                      ..._profile!,
+                      signature: user!.signature,
+                    }));
+                  }}
+                />
+              </div>
+              <div className="my-4">
+                <p>Sello:</p>
+                {profile.stamp && (
+                  <div className="my-2 w-[600px] h-[250px] relative">
+                    <Image
+                      src={profile.stamp}
+                      alt="user_stamp"
+                      width={600}
+                      height={250}
+                      objectFit="fill"
+                      priority
+                      quality={100}
+                    />
+                  </div>
+                )}
+                <Attachment
+                  key={profile.stamp}
+                  label={`${profile.stamp ? "Actualiza" : "Sube"} tu sello`}
+                  className="my-1"
+                  iconWhenAttached={
+                    <FingerPrintIcon className="w-8 h-8 text-gray-400 group-hover:text-gray-600 animate-pulse" />
+                  }
+                  onFileAttached={async (file) => {
+                    if (!file.type.startsWith("image"))
+                      return showModal({
+                        icon: "error",
+                        title: "El sello tiene que ser un archivo de imagen.",
+                        timer: 1500,
+                      });
+
+                    // const signature = await toBase64(file);
+                    const stampFormData = new FormData();
+                    stampFormData.append("stamp", file);
+                    const user = await updateMe(stampFormData);
+                    if (user instanceof ResponseError)
+                      return unexpectedError(user);
+                    if (!profile) return;
+                    setProfile((_profile) => ({
+                      ..._profile!,
+                      stamp: user!.stamp,
+                    }));
+                  }}
+                />
+              </div>
+
               <p className="mt-2">Cambiar contraseña:</p>
               <form
                 onSubmit={async (e) => {
@@ -230,12 +317,7 @@ const index = ({
                     newPassword: formData.get("newPassword")!.toString(),
                   });
                   if (updatedPass instanceof ResponseError)
-                    return showModal({
-                      icon: "error",
-                      body: JSON.stringify(updatedPass),
-                      buttons: "OK",
-                      submitButtonText: "Entendido",
-                    }); // TODO: Show real message
+                    return unexpectedError(updatedPass);
                   showModal({
                     icon: "success",
                     body: "La contraseña ha sido actualizada correctamente",

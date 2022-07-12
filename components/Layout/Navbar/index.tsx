@@ -23,6 +23,7 @@ import { ResponseError } from "../../../types/Responses";
 import { Informacion } from "./Item";
 import { me } from "../../../axios/User";
 import { showModal } from "../../Modal/showModal";
+import { unexpectedError } from "../../../utils/Error";
 
 const index = ({
   isAuth,
@@ -62,12 +63,7 @@ const index = ({
         (usernameInput as HTMLInputElement).classList.add("border-red");
         (passwordInput as HTMLInputElement).classList.add("border-red");
         (usernameInput as HTMLInputElement).focus();
-        return showModal({
-          icon: "error",
-          body: JSON.stringify(user),
-          buttons: "OK",
-          submitButtonText: "Entendido",
-        }); // TODO: Show real message
+        return unexpectedError(user);
       }
       setAuth(user);
     },

@@ -15,6 +15,7 @@ import { auth as tryAuth } from "../../axios/Auth";
 import { create } from "../../axios/User";
 import { ResponseError } from "../../types/Responses";
 import { showModal } from "../../components/Modal/showModal";
+import { unexpectedError } from "../../utils/Error";
 
 type Invitation = { email: string; labId: string };
 type InvalidInvitation = { error: string; type: "timeout" | "invalid" };
@@ -128,12 +129,7 @@ const RegisterByInvite = ({
           });
           if (data instanceof ResponseError) {
             setLoadingSubmit(false);
-            return showModal({
-              icon: "error",
-              body: JSON.stringify(data),
-              buttons: "OK",
-              submitButtonText: "Entendido",
-            }); // TODO: Show real message
+            return unexpectedError(data);
           }
           const auth = await tryAuth();
           setAuth(auth);
