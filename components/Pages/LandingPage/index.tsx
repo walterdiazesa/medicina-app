@@ -8,7 +8,7 @@ import ButtonWithIcon from "../../Button/ButtonWithIcon";
 import FAQ from "./Sections/FAQ";
 import Features from "./Sections/Features";
 import FreeTrial from "./Sections/FreeTrial";
-import Wave from "./Sections/Wave";
+import Wave from "../Wave";
 
 const index = () => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -111,7 +111,7 @@ const index = () => {
           </div>
           <div className="relative sm:w-1/2 min-h-[300px] sm:min-h-[unset]">
             <Image
-              src="/ProductLandingPage.png"
+              src="/pages/LandingPage/Product.png"
               alt="product"
               layout="fill"
               objectFit="contain"

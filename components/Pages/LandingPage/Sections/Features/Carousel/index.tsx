@@ -21,7 +21,7 @@ const index = ({
           <div className="sm:absolute inline-flex flex-row sm:flex-col md:max-w-none mx-auto rounded min-w-[calc(100vw-2rem)] sm:min-w-[unset]">
             <Image
               className=""
-              src="/SecurityLandingPage.png"
+              src="/pages/LandingPage/Security.png"
               width="500"
               height="462"
               alt="security"
@@ -35,7 +35,7 @@ const index = ({
           <div className="sm:absolute inline-flex flex-row sm:flex-col md:max-w-none mx-auto rounded min-w-[calc(100vw-2rem)] sm:min-w-[unset]">
             <Image
               className=""
-              src="/CloudLandingPage.png"
+              src="/pages/LandingPage/Cloud.png"
               width="500"
               height="462"
               alt="cloud"
@@ -49,7 +49,7 @@ const index = ({
           <div className="sm:absolute inline-flex flex-row sm:flex-col md:max-w-none mx-auto rounded min-w-[calc(100vw-2rem)] sm:min-w-[unset]">
             <Image
               className=""
-              src="/AppLandingPage.png"
+              src="/pages/LandingPage/AppPalm.png"
               width="500"
               height="462"
               alt="app"

@@ -54,7 +54,7 @@ const dict: { [key: string]: { [msg: string]: string } } = {
   },
 };
 
-const getError = (key: string, msg: string, notUnique?: boolean) => {
+export const getError = (key: string, msg: string, notUnique?: boolean) => {
   if (notUnique)
     return `Campo de "${msg.slice(msg.lastIndexOf("__") + 2)}" ya en uso`;
   if (key === "format") {

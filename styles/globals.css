@@ -25,8 +25,23 @@ body {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
+.glass-xl {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
 
 .orb {
+  background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+  --tw-gradient-from: #99f6e4;
+  --tw-gradient-stops: var(--tw-gradient-from),
+    var(--tw-gradient-to, rgb(153 246 228 / 0));
+  --tw-gradient-to: #0d9488;
+  border-radius: 9999px;
+  position: absolute;
+}
+
+.orb-reg {
   background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
   --tw-gradient-from: #99f6e4;
   --tw-gradient-stops: var(--tw-gradient-from),
@@ -55,6 +70,26 @@ body {
   animation-iteration-count: infinite;
   animation-direction: alternate;
   border-radius: 66% 34% 59% 41% / 30% 28% 72% 70%;
+}
+
+#orbreg1 {
+  min-height: 7rem;
+  min-width: 7rem;
+  animation-duration: 12s;
+  animation-name: orbreg1;
+  animation-timing-function: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  border-radius: 66% 34% 59% 41% / 30% 28% 72% 70%;
+}
+#orbreg2 {
+  min-height: 18rem;
+  min-width: 18rem;
+  animation-duration: 18s;
+  animation-name: orbreg2;
+  animation-timing-function: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
 }
 
 #btn_pricing_orb {
@@ -98,6 +133,25 @@ body {
   100% {
     transform: translate(60px, -30px) rotate(60deg) scale(1.15);
     border-radius: 41% 59% 59% 41% / 30% 57% 43% 70%;
+  }
+}
+
+@keyframes orbreg1 {
+  0% {
+    transform: translate(0, 0) rotate(0) scale(1);
+    border-radius: 66% 34% 59% 41% / 30% 28% 72% 70%;
+  }
+  100% {
+    transform: translate(80px, 80px) rotate(60deg) scale(1.15);
+    border-radius: 41% 59% 59% 41% / 30% 57% 43% 70%;
+  }
+}
+@keyframes orbreg2 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(-20px, 30px) scale(1.05);
   }
 }
 

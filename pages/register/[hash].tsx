@@ -16,6 +16,8 @@ import { create } from "../../axios/User";
 import { ResponseError } from "../../types/Responses";
 import { showModal } from "../../components/Modal/showModal";
 import { unexpectedError } from "../../utils/Error";
+import SectionPage from "../../components/Pages/SectionPage";
+import Image from "next/image";
 
 type Invitation = { email: string; labId: string };
 type InvalidInvitation = { error: string; type: "timeout" | "invalid" };
@@ -84,8 +86,42 @@ const RegisterByInvite = ({
     );
 
   return (
-    <div className="mt-8">
-      <p>
+    <SectionPage
+      mobileSectionHeader={
+        <div className="text-center">
+          <h2 className="text-lg w-full font-bold text-gray-600 mb-2">
+            Activa tu cuenta
+          </h2>
+          <Image
+            src="/pages/Register/DoctorTest.png"
+            width="207"
+            height="200"
+            alt="register"
+            objectFit="contain"
+            priority
+          />
+        </div>
+      }
+      sectionHeader={
+        <>
+          <h2 className="text-lg xl:text-xl font-bold text-teal-contrast antialiased">
+            Recibiste una invitación
+          </h2>
+          <h2 className="text-2xl xl:text-4xl font-bold text-white antialiased mb-4">
+            Para crear tu cuenta
+          </h2>
+          <Image
+            src="/pages/Register/DoctorTest.png"
+            width="225"
+            height="315"
+            alt="register"
+            objectFit="contain"
+            priority
+          />
+        </>
+      }
+    >
+      <p className="text-center my-2">
         Creación de usuario para:{" "}
         <span className="font-semibold">
           {(invitation as Invitation).email}
@@ -139,20 +175,21 @@ const RegisterByInvite = ({
           type="text"
           name="name"
           placeholder="Introduce tu nombre"
-          className="max-w-xl my-2"
+          className="my-2"
           autofocus
         />
         <Input
           type="password"
           name="password"
           placeholder="Contraseña"
-          className="max-w-xl my-2"
+          className="my-2"
           icon={<KeyIcon className="text-gray-400 h-5 w-5" />}
         />
         <ButtonWithIcon
           text={loadingSubmit ? "Creando cuenta" : "Registrar"}
           disabled={loadingSubmit}
-          className="w-full mt-2 md:max-w-xl"
+          className="mt-2 w-full"
+          textClassName="font-normal"
         >
           {loadingSubmit ? (
             <Spinner className="mr-1" />
@@ -161,7 +198,7 @@ const RegisterByInvite = ({
           )}
         </ButtonWithIcon>
       </form>
-    </div>
+    </SectionPage>
   );
 };
 

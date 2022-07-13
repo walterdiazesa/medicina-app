@@ -70,7 +70,9 @@ const index = ({ children }: { children: JSX.Element }) => {
         ) : (
           <div
             className={`min-w-full min-h-[calc(100vh-8rem)] ${
-              router.pathname !== "/" && "px-2 md:px-8"
+              !["/", "/register", "/register/[hash]"].includes(
+                router.pathname
+              ) && "px-2 md:px-8"
             } pt-16`}
           >
             {{ ...children, props: { ...children.props, auth, setAuth } }}

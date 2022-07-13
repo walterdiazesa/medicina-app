@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import crypto from "crypto";
+import { getError } from "../../utils/Error";
 
 const emailPublicRsaDecrypt = (encryptedData: string) => {
   try {
@@ -20,7 +21,10 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const decrypted = emailPublicRsaDecrypt(req.body.hash);
-  if (!decrypted) return res.status(400).send({ error: "Invalid invitation" });
+  if (!decrypted)
+    return res
+      .status(400)
+      .send({ error: getError("invitation", "Invalid invitation") });
   const {
     email,
     expires,
@@ -31,10 +35,10 @@ export default async function handler(
     labId: string;
   } = JSON.parse(decrypted);
 
-  if (expires < Date.now())
-    return res
-      .status(410)
-      .send({ error: "The requested invitation already expired." });
+  /* if (expires < Date.now())
+    return res.status(410).send({
+      error: getError("invitation", "The requested invitation already expired"),
+    }); */
 
   return res.send({ email, labId });
 }
