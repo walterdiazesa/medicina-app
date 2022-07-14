@@ -43,18 +43,6 @@ export const getAccessLink = async (id: string) => {
   return status !== 200 ? new ResponseError(data) : (data as string);
 };
 
-export const getValidatorSignatures = async (id: string, access?: string) => {
-  const { status, data } = await api.get(
-    `/test/${id}/validator_signatures${access ? `/${access}` : ""}`,
-    {
-      withCredentials: true,
-    }
-  );
-  return status !== 200
-    ? new ResponseError(data)
-    : (data as { signature: string; stamp: string });
-};
-
 export const post = async (test: Test) => {
   const response = await api.post("/test", test);
   if (response.status !== 200) return null;

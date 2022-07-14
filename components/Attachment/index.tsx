@@ -2,14 +2,18 @@ import React, { useState } from "react";
 
 const index = ({
   label,
+  labelClassName,
   iconWhenAttached,
   className = "",
   onFileAttached,
+  fieldSize = "normal",
 }: {
   label: string;
+  labelClassName?: string;
   className?: string;
   iconWhenAttached: JSX.Element;
   onFileAttached?: (file: File) => void;
+  fieldSize?: "mini" | "normal";
 }) => {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [imageAttached, setImageAttached] = useState<undefined | string>(
@@ -19,18 +23,32 @@ const index = ({
   return (
     <div className={`flex justify-center ${className}`}>
       <div className="w-full rounded-md">
-        <label className="inline-block mb-2 text-sm text-gray-400">
+        <label
+          className={`${
+            labelClassName || ""
+          } inline-block mb-2 text-sm text-gray-400`}
+        >
           {label}
         </label>
         <div className="flex items-center justify-center w-full">
-          <label className="flex cursor-pointer flex-col w-full h-32 border-4 border-teal-100 border-opacity-80 hover:border-opacity-100 border-dashed hover:bg-gray-100 hover:border-gray-300">
-            <div className="flex flex-col items-center justify-center pt-7">
+          <label
+            className={`flex cursor-pointer flex-col w-full ${
+              fieldSize === "normal" ? "h-32" : ""
+            } border-4 border-teal-100 border-opacity-80 hover:border-opacity-100 border-dashed hover:bg-gray-100 hover:border-gray-300`}
+          >
+            <div
+              className={`flex items-center justify-center ${
+                fieldSize === "normal" ? "flex-col pt-7" : "my-2"
+              }`}
+            >
               {imageAttached ? (
                 iconWhenAttached
               ) : (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="w-8 h-8 text-gray-400 group-hover:text-gray-600"
+                  className={`${
+                    fieldSize === "normal" ? "h-8 w-8" : "w-5 h-5 mr-2"
+                  } text-gray-400 group-hover:text-gray-600`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -44,7 +62,9 @@ const index = ({
                 </svg>
               )}
               <p
-                className={`pt-1 text-sm tracking-wider text-gray-400 group-hover:text-gray-600 ${
+                className={`${
+                  fieldSize === "normal" ? "pt-1" : ""
+                } text-sm tracking-wider text-gray-400 group-hover:text-gray-600 ${
                   imageAttached && onFileAttached && "animate-pulse"
                 }`}
               >
@@ -60,7 +80,7 @@ const index = ({
             <input
               type="file"
               accept="image/png, image/jpeg, image/webp"
-              className="opacity-0"
+              className={`opacity-0 ${fieldSize === "mini" ? "h-0" : ""}`}
               onChange={(e) => {
                 setImageAttached(
                   (e.target.files && e.target.files[0].name) || undefined

@@ -408,10 +408,8 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
               alignItems: "baseline",
             }}
           >
-            {test.validator?.signature &&
-              test.validator.signature.includes(
-                "user-signatures.s3.filebase.com"
-              ) && (
+            {test.lab?.signature &&
+              test.lab.signature.includes("lab-signatures.s3.filebase.com") && (
                 <Image
                   style={{
                     flex: 1,
@@ -421,13 +419,11 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
                     minWidth: "3cm",
                     minHeight: "1.5cm",
                   }}
-                  src={test.validator.signature}
+                  src={test.lab.signature}
                 />
               )}
-            {test.validator?.stamp &&
-              test.validator.stamp.includes(
-                "user-signatures.s3.filebase.com"
-              ) && (
+            {test.lab?.stamp &&
+              test.lab.stamp.includes("lab-signatures.s3.filebase.com") && (
                 <Image
                   style={{
                     flex: 1,
@@ -438,7 +434,7 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
                     minHeight: "2.5cm",
                     marginLeft: "0.4cm",
                   }}
-                  src={test.validator.stamp}
+                  src={test.lab.stamp}
                 />
               )}
             <View

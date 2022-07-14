@@ -8,12 +8,12 @@ import {
 import qs from "qs";
 import { ResponseError } from "../../types/Responses";
 
-export const mine = async (includeEmployeeInfo?: boolean) => {
+export const mine = async (completeLabInfo?: boolean) => {
   const { status, data } = await api.get("/labs/mine", {
     withCredentials: true,
-    ...(includeEmployeeInfo && {
+    ...(completeLabInfo && {
       params: {
-        includeEmployeeInfo,
+        completeLabInfo,
       },
     }),
   });
@@ -44,9 +44,14 @@ export const getLaboratory = async ({
   return data as Lab;
 };
 
-export async function updateLab(labId: string, body: Partial<Lab>) {
+export async function updateLab(labId: string, body: Partial<Lab> | FormData) {
   const { status, data } = await api.patch(`/labs/${labId}`, body, {
     withCredentials: true,
+    ...(body instanceof FormData && {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
   });
   return status === 200 ? (data as Lab) : new ResponseError(data);
 }
@@ -62,13 +67,9 @@ export const getLaboratories = async ({ fields }: { fields?: LabSelect }) => {
 };
 
 export const createLaboratory = async (labFields: Object) => {
-  const { status, data } = await api.post(
-    "/labs",
-    { ...labFields, img: "https://medicina-app.vercel.app/test-pdf/logo.png" },
-    {
-      withCredentials: true,
-    }
-  );
+  const { status, data } = await api.post("/labs", labFields, {
+    withCredentials: true,
+  });
   return { created: status === 201, data };
 };
 

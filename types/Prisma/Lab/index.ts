@@ -11,6 +11,8 @@ export type Lab = {
   web: string | null;
   publicEmail: string;
   img: string;
+  signature: string | null;
+  stamp: string | null;
   installer: string | null;
   rsaPrivateKey: string;
   preferences: Partial<LabPreferences>;

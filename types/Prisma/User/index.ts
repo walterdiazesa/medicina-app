@@ -4,9 +4,6 @@ export type User = {
   slug: string;
   name: string;
   hash: string;
-  profileImg: string | null;
-  signature: string | null;
-  stamp: string | null;
   createdAt: Date;
   labIds: string[];
   ownerIds: string[];

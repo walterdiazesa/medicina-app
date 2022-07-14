@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import {
   get,
   getAccessLink,
-  getValidatorSignatures,
   isTestAuthorized,
   put,
   requestValidation,
@@ -185,7 +184,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
     ) {
       getLaboratory({
         id: test.lab!.id,
-        fields: { img: true, preferences: true },
+        fields: { img: true, preferences: true, signature: true, stamp: true },
         ...(router.query.access && {
           access: router.query.access as string,
           test: test.id!,
@@ -194,7 +193,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
         if (labData)
           test.lab = {
             ...test.lab!,
-            preferences: { ...test.lab!.preferences, ...labData.preferences },
+            ...labData,
           };
         setIsAuthorized(!!labData);
       });
@@ -219,29 +218,6 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
 
   useEffect(() => {
     if (!test) return;
-    if (
-      test.validator &&
-      ((test.validator.signature &&
-        !test.validator.signature.includes(
-          "user-signatures.s3.filebase.com"
-        )) ||
-        (test.validator.stamp &&
-          !test.validator.stamp.includes("user-signatures.s3.filebase.com")))
-      // && testSignatures === undefined
-    )
-      (async () => {
-        const validatorSignatures = await getValidatorSignatures(
-          test.id!,
-          router.query.access as string | undefined
-        );
-        if (validatorSignatures instanceof ResponseError)
-          return unexpectedError(validatorSignatures);
-        /* if (validatorSignatures instanceof ResponseError)
-          setTestSignatures(null);
-        else setTestSignatures(validatorSignatures); */
-        test.validator = { ...test.validator!, ...validatorSignatures };
-        updatePDF();
-      })();
     if (test.lab && test.lab.preferences.useQR && !testQR)
       (async () => {
         let accessLink: string;

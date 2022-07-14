@@ -11,9 +11,9 @@ import {
   PhoneIcon,
   PhoneIncomingIcon,
 } from "@heroicons/react/outline";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { createLaboratory } from "../../axios/Lab";
-import { ButtonWithIcon, Input } from "../../components";
+import { Attachment, ButtonWithIcon, Input } from "../../components";
 import { auth as tryAuth } from "../../axios/Auth";
 import { Auth } from "../../types/Auth";
 import { useRouter } from "next/router";
@@ -22,6 +22,8 @@ import { unexpectedError } from "../../utils/Error";
 import Image from "next/image";
 import Wave from "../../components/Pages/Wave";
 import SectionPage from "../../components/Pages/SectionPage";
+import { requestPutObjectURL } from "../../axios/Files";
+import axios from "axios";
 
 const index = ({
   auth,
@@ -38,6 +40,8 @@ const index = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth]);
+
+  const [labTmpImg, setLabTmpImg] = useState("");
 
   return (
     <SectionPage
@@ -107,6 +111,16 @@ const index = ({
               submitButtonText: "Entendido",
             });
           }
+          if (!labTmpImg)
+            return showModal({
+              icon: "error",
+              title: `Sube la imagen de tu laboratorio`,
+              body: "Debes de subir una <b>imagen, logo o banner de tu laboratorio</b>, la cual será indispensable para mostrar en los reportes generados",
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            });
+          labFields["img"] = labTmpImg;
+
           const { created, data } = await createLaboratory(labFields);
 
           if (!created) return unexpectedError(data);
@@ -128,6 +142,57 @@ const index = ({
             (Información pública, mostrada en los reportes generados)
           </span>
         </h3>
+        {labTmpImg && (
+          <div className="sm:my-2 max-h-44 h-44 relative">
+            <Image
+              src={labTmpImg}
+              alt="lab_img"
+              layout="fill"
+              objectFit="contain"
+              priority
+              quality={100}
+            />
+          </div>
+        )}
+        <Attachment
+          key={labTmpImg}
+          fieldSize={labTmpImg ? "mini" : "normal"}
+          label={`${
+            labTmpImg ? "Cambia la" : "Sube una"
+          } foto para tu laboratorio`}
+          labelClassName="text-gray-600"
+          className="my-1"
+          iconWhenAttached={
+            <OfficeBuildingIcon
+              className={`${
+                labTmpImg ? "h-5 w-5" : "w-8 h-8"
+              } text-gray-400 group-hover:text-gray-600 animate-pulse`}
+            />
+          }
+          onFileAttached={async (file) => {
+            if (!file.type.startsWith("image"))
+              return showModal({
+                icon: "error",
+                title:
+                  "La imagen del laboratorio tiene que ser un archivo de imagen.",
+                timer: 1500,
+              });
+            const publicAssetUploadURL = await requestPutObjectURL();
+
+            try {
+              await axios.put(publicAssetUploadURL, file);
+            } catch (e) {
+              setLabTmpImg("");
+              return showModal({
+                icon: "error",
+                title: "Ocurrió un problema al subir la imagen.",
+                timer: 1500,
+              });
+            }
+
+            setLabTmpImg(publicAssetUploadURL.split("?")[0]);
+          }}
+        />
         <Input
           type="text"
           name="name"
