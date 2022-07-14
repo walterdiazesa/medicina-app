@@ -92,9 +92,6 @@ const index = ({
   return (
     <div key={lab.id}>
       <p>
-        ID: <span className="font-semibold">{lab.id}</span>
-      </p>
-      <p>
         Nombre: <span className="font-semibold">{lab.name}</span>
       </p>
       <p>

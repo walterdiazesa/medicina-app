@@ -25,6 +25,41 @@ import { me } from "../../../axios/User";
 import { showModal } from "../../Modal/showModal";
 import { unexpectedError } from "../../../utils/Error";
 
+type NavItem = { route: string; text: string };
+
+const navItems: NavItem[] = [
+  { route: "/test", text: "Exámenes" },
+  { route: "/patient", text: "Pacientes" },
+  { route: "/listener", text: "Transformadores" },
+];
+
+const NavItem = ({
+  item,
+  close,
+  className,
+}: {
+  item: NavItem;
+  close: Function;
+  className?: string;
+}) => {
+  const router = useRouter();
+
+  return (
+    <Link href={item.route}>
+      <a
+        className={`${className || ""} block sm:inline ${
+          item.route !== router.pathname
+            ? "text-gray-500 hover:text-gray-400 bg-gray-100 hover:bg-gray-200"
+            : "text-gray-400 bg-gray-200"
+        } px-3 py-2 rounded-md sm:text-sm font-medium sm:font-semibold`}
+        onClick={() => close()}
+      >
+        {item.text}
+      </a>
+    </Link>
+  );
+};
+
 const index = ({
   isAuth,
   setAuth,
@@ -112,10 +147,12 @@ const index = ({
       {({ open, close }) => (
         <>
           <div className="px-2 sm:px-6 lg:px-8">
-            {/* <div className="relative flex items-center justify-between h-16"> TODO: Uncomment when sections */}
-            <div className="relative flex items-center justify-end h-16">
-              {/* <div className="absolute inset-y-0 left-0 flex items-center sm:hidden"> TODO: Uncomment when sections */}
-              <div className="absolute inset-y-0 left-0 items-center hidden">
+            <div
+              className={`relative flex items-center ${
+                isAuth ? "justify-between" : "justify-end"
+              } h-16`}
+            >
+              <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
                 <Disclosure.Button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-200">
                   <span className="sr-only">Open main menu</span>
                   {open ? (
@@ -125,54 +162,22 @@ const index = ({
                   )}
                 </Disclosure.Button>
               </div>
-              {/* <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start"> TODO: Uncomment when sections */}
-              <div className="flex-1 items-center justify-center sm:items-stretch sm:justify-start hidden">
-                <div className="hidden sm:block sm:ml-6">
-                  <div className="flex space-x-4">
-                    {router.pathname !== "/" && (
-                      <Link href="/">
-                        <a
-                          className="bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 px-3 py-2 rounded-md text-sm font-semibold"
-                          onClick={() => close()}
-                        >
-                          Inicio
-                        </a>
-                      </Link>
-                    )}
-                    <Menu as="div" className="relative">
-                      {({ open }) => (
-                        <>
-                          <div>
-                            <Menu.Button className="flex">
-                              <a className="bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 px-3 py-2 rounded-md text-sm font-semibold">
-                                Información
-                              </a>
-                            </Menu.Button>
-                          </div>
-                          <Transition isOpen={open}>
-                            <Menu.Items
-                              static
-                              className="origin-top-left absolute left-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-gray-200 ring-1 ring-black ring-opacity-5 focus:outline-none 2xl:z-50"
-                            >
-                              <Informacion close={close} />
-                            </Menu.Items>
-                          </Transition>
-                        </>
-                      )}
-                    </Menu>
-                    <Link href="/pricing">
-                      <a
-                        className="bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 px-3 py-2 rounded-md text-sm font-semibold"
-                        onClick={() => close()}
-                      >
-                        Precios
-                      </a>
-                    </Link>
-                  </div>
-                </div>
-              </div>
               {isAuth ? (
                 <>
+                  <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
+                    <div className="hidden sm:block sm:ml-6">
+                      <div className="flex space-x-4">
+                        {navItems.map((item) => (
+                          <NavItem
+                            item={item}
+                            close={close}
+                            key={item.route}
+                            className="-ml-6"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                   <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                     <p className="text-gray-500 hidden md:block">
                       {isAuth["sub"]}
@@ -227,7 +232,7 @@ const index = ({
                                     <a className="hover:bg-gray-200 cursor-pointer flex px-4 py-2 text-sm text-gray-500 items-center">
                                       <OfficeBuildingIcon className="w-4 h-4 mr-1.5" />
                                       <span className="transform translate-y-1.4px">
-                                        Mi laboratorio
+                                        Mis laboratorios
                                       </span>
                                     </a>
                                   </Link>
@@ -379,48 +384,9 @@ const index = ({
           <Transition isOpen={open}>
             <Disclosure.Panel className="sm:hidden">
               <div className="px-2 pt-2 pb-3 space-y-1">
-                {router.pathname !== "/" && (
-                  <Link href="/">
-                    <a
-                      className="block bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 px-3 py-2 rounded-md text-base font-medium"
-                      onClick={() => close()}
-                    >
-                      Inicio
-                    </a>
-                  </Link>
-                )}
-                <Menu
-                  as="div"
-                  className="relative z-2 block bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 rounded-md text-base font-medium w-full"
-                >
-                  {({ open }) => (
-                    <>
-                      <div>
-                        <Menu.Button className="flex w-full">
-                          <a className="w-full px-3 py-2 text-left">
-                            Información
-                          </a>
-                        </Menu.Button>
-                      </div>
-                      <Transition isOpen={open}>
-                        <Menu.Items
-                          static
-                          className="origin-top absolute left-0 mt-1 rounded-md shadow-lg py-1 bg-gray-200 ring-1 ring-black ring-opacity-5 focus:outline-none z-1 w-full"
-                        >
-                          <Informacion close={close} />
-                        </Menu.Items>
-                      </Transition>
-                    </>
-                  )}
-                </Menu>
-                <Link href="/pricing">
-                  <a
-                    className="block bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-400 px-3 py-2 rounded-md text-base font-medium"
-                    onClick={() => close()}
-                  >
-                    Precios
-                  </a>
-                </Link>
+                {navItems.map((item) => (
+                  <NavItem item={item} close={close} key={item.route} />
+                ))}
               </div>
             </Disclosure.Panel>
           </Transition>

@@ -34,7 +34,7 @@ const index = ({
 
   useEffect(() => {
     if (auth) {
-      router.replace("/profile");
+      router.replace("/listener");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth]);

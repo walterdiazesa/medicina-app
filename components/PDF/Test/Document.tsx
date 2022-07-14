@@ -87,7 +87,14 @@ const ReportItem = ({
 
 const Document = ({ test, qr }: { test: Test; qr?: string }) => {
   return (
-    <PDFDocument>
+    <PDFDocument
+      title={getTestId(test)}
+      author="Flemik"
+      subject="Exámen generado por Flemik"
+      creator="Flemik"
+      producer="Flemik"
+      keywords="test,chem,automated"
+    >
       <Page
         size="A4"
         style={{

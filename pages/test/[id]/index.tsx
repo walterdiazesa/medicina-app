@@ -22,11 +22,13 @@ import {
   DocumentReportIcon,
   DocumentTextIcon,
   ExclamationCircleIcon,
+  ExclamationIcon,
   IdentificationIcon,
   MailIcon,
   PaperAirplaneIcon,
   PencilIcon,
   PhoneIcon,
+  PlusIcon,
   QrcodeIcon,
   TrashIcon,
   UserIcon,
@@ -631,28 +633,38 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                 {isPatientSavingLoading ? (
                   <Spinner color="text-gray-400" className="ml-3" />
                 ) : (
-                  <Save
-                    onClick={async () => {
-                      if (!savePatient.current || savePatient.current === "-1")
-                        return showModal({
-                          icon: "error",
-                          title: "Necesitas seleccionar un paciente",
-                          buttons: "OK",
-                          submitButtonText: "Entendido",
+                  <>
+                    <PlusIcon
+                      onClick={async () => setIsCreatePatientOpen(true)}
+                      strokeWidth={3}
+                      className="w-5 h-5 ml-3 text-teal-500 hover:text-teal-300 cursor-pointer"
+                    />
+                    <Save
+                      onClick={async () => {
+                        if (
+                          !savePatient.current ||
+                          savePatient.current === "-1"
+                        )
+                          return showModal({
+                            icon: "error",
+                            title: "Necesitas seleccionar un paciente",
+                            buttons: "OK",
+                            submitButtonText: "Entendido",
+                          });
+                        setPatientSavingLoading(true);
+                        const { status, testData } = await put(test.id!, {
+                          patientId: savePatient.current,
                         });
-                      setPatientSavingLoading(true);
-                      const { status, testData } = await put(test.id!, {
-                        patientId: savePatient.current,
-                      });
-                      setPatientSavingLoading(false);
-                      if (testData instanceof ResponseError)
-                        return unexpectedError(testData);
-                      test.patient = testData?.patient;
-                      forceUpdate();
-                      //setPatients([]); // just for forceRerender
-                    }}
-                    className="w-5 h-5 ml-3 fill-gray-500 hover:fill-teal-500 cursor-pointer"
-                  />
+                        setPatientSavingLoading(false);
+                        if (testData instanceof ResponseError)
+                          return unexpectedError(testData);
+                        test.patient = testData?.patient;
+                        forceUpdate();
+                        //setPatients([]); // just for forceRerender
+                      }}
+                      className="w-5 h-5 ml-3 fill-gray-500 hover:fill-teal-500 cursor-pointer"
+                    />
+                  </>
                 )}
               </div>
             </div>
@@ -686,11 +698,20 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
               </div>
             </div>
           )}
-          <p className="text-gray-800">
-            Sexo del paciente según el analizador:{" "}
-            <span className="font-bold">{test.sex}</span>
-          </p>
           <div className="rounded-md shadow-lg bg-gradient-to-br from-[#e9e9e9] sm:from-[#f0f0f0] to-white px-4 py-2 mb-2">
+            {(!test.patient || test.sex !== test.patient.sex) && (
+              <p
+                className={`flex items-center ${
+                  !test.patient ? "text-gray-800" : "text-yellow-600"
+                }`}
+              >
+                {test.patient && (
+                  <ExclamationCircleIcon className="h-5 w-5 mr-1" />
+                )}
+                Sexo del paciente según el analizador:
+                <span className="font-bold ml-1">{test.sex}</span>
+              </p>
+            )}
             <p className="font-bold text-gray-800">Tests:</p>
             <div
               className={`${test.tests.length > 4 && "sm:grid"} grid-cols-3`}

@@ -1,9 +1,10 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
-import { deleteTest, get } from "../../axios/Test";
+import { deleteTest, get, getAccessLink } from "../../axios/Test";
 import { Spinner } from "../../components/Icons";
 import { Test } from "../../types/Prisma/Test";
 import {
+  BadgeCheckIcon,
   DocumentDownloadIcon,
   DocumentReportIcon,
   DocumentTextIcon,
@@ -169,7 +170,19 @@ const index = () => {
                       </p>
                     </div>
                     <div className="flex items-center truncate">
-                      <DocumentDownloadIcon className="h-5 w-5 mr-2 text-red-500 hover:text-red-900" />
+                      {test.validatorId && (
+                        <BadgeCheckIcon className="h-5 w-5 mr-2 text-teal-500" />
+                      )}
+                      <DocumentDownloadIcon
+                        onClick={async (e) => {
+                          e.preventDefault();
+                          const _accessLink = await getAccessLink(test.id!);
+                          if (_accessLink instanceof ResponseError)
+                            return unexpectedError(_accessLink);
+                          window.open(_accessLink, "_blank");
+                        }}
+                        className="h-5 w-5 mr-2 text-red-500 hover:text-red-900 cursor-pointer"
+                      />
                       {/* <DocumentReportIcon className="h-5 w-5 mr-2 text-green-700 hover:text-green-900" />
                   <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-500 hover:text-blue-700" /> */}
                       <p

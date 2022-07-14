@@ -35,10 +35,10 @@ export default async function handler(
     labId: string;
   } = JSON.parse(decrypted);
 
-  /* if (expires < Date.now())
+  if (expires < Date.now())
     return res.status(410).send({
       error: getError("invitation", "The requested invitation already expired"),
-    }); */
+    });
 
   return res.send({ email, labId });
 }

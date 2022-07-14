@@ -49,7 +49,7 @@ const index = ({
           <div className="sm:absolute inline-flex flex-row sm:flex-col md:max-w-none mx-auto rounded min-w-[calc(100vw-2rem)] sm:min-w-[unset]">
             <Image
               className=""
-              src="/pages/LandingPage/AppPalm.png"
+              src="/pages/LandingPage/App.png"
               width="500"
               height="462"
               alt="app"
