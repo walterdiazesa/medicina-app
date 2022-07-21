@@ -9,13 +9,21 @@ const FAQS: { q: string; a: string }[] = [
     a: "Cualquier laboratorio clínico que esté en búsqueda de automatizar sus procesos, centralizar su información y mejorar su productividad.",
   },
   {
+    q: "Servicios disponibles",
+    a: `<ul class="list-disc">
+          <li>Hematología</li>
+          <li>Química seca</li>
+          <li>Pruebas especiales</li>
+        </ul>`,
+  },
+  /* {
     q: "Analizadores compatibles",
     a: `<ul class="list-disc">
           <li>DRI-CHEM NX500 | Fujifilm</li>
           <li><b>(próximamente)</b> DRI-CHEM NX600 | Fujifilm</li>
           <li><b>(próximamente)</b> DRI-CHEM NX700 | Fujifilm</li>
         </ul>`,
-  },
+  }, */
   {
     q: "¿Cómo se usa?",
     a: `<ul>

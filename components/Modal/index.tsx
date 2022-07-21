@@ -29,8 +29,10 @@ const Modal = ({
   submitCallback,
   disableCloseWhenTouchOutside,
   requiredItems,
+  fullscreen,
 }: {
   open: boolean;
+  fullscreen?: true;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
   buttons?:
     | { submit: SubmitButton; cancel: Button }
@@ -127,7 +129,11 @@ const Modal = ({
             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
             leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
           >
-            <div className="inline-block align-bottom bg-white rounded-lg text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div
+              className={`inline-block align-bottom bg-white rounded-lg text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:w-full${
+                fullscreen ? " sm:max-w-fit" : " sm:max-w-lg"
+              }`}
+            >
               {children ? (
                 <form id="modal_form">{children}</form>
               ) : (

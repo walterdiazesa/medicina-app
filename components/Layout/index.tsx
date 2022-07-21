@@ -58,7 +58,9 @@ const index = ({ children }: { children: JSX.Element }) => {
   return (
     <div id="mainLayout">
       <div id="blurLayoutModal" className="duration-200">
-        <Navbar isAuth={auth} setAuth={setAuth} />
+        {router.pathname !== "/404" && (
+          <Navbar isAuth={auth} setAuth={setAuth} />
+        )}
         {!auth &&
         !SECURE_ROUTES.has(router.pathname) &&
         !Array.from(SECURE_ROUTES_REGEX).some((value) =>
@@ -73,7 +75,7 @@ const index = ({ children }: { children: JSX.Element }) => {
               !["/", "/register", "/register/[hash]"].includes(
                 router.pathname
               ) && "px-2 md:px-8"
-            } pt-16`}
+            } ${router.pathname !== "/404" && "pt-16"}`}
           >
             {{ ...children, props: { ...children.props, auth, setAuth } }}
           </div>

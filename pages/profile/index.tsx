@@ -37,7 +37,7 @@ const index = ({
     <div className="my-2 md:my-8 max-w-6xl">
       {auth?.["sub-user"] && (
         <>
-          <h1 className="text-lg font-semibold mb-2">Perfil</h1>
+          <h1 className="text-lg font-semibold mb-2">Mi Perfil</h1>
           {profile === undefined ? (
             <p className="text-gray-500 animate-pulse flex items-center">
               <Spinner pulse className="mr-2" color="text-gray-500" />
@@ -49,83 +49,98 @@ const index = ({
               Ocurrió un error obteniendo la información.
             </p>
           ) : (
-            <>
-              <p>
-                ID: <span className="font-semibold">{profile.id}</span>
-              </p>
-              <p>
-                Slug: <span className="font-semibold">{profile.slug}</span>
-              </p>
-              <p>
-                Nombre: <span className="font-semibold">{profile.name}</span>
-              </p>
-              <p>
-                Email: <span className="font-semibold">{profile.email}</span>
-              </p>
-              <p className="mt-2">Cambiar contraseña:</p>
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  const form = e.target as HTMLFormElement;
-                  const formData = new FormData(form);
-                  if (
-                    !formData.has("oldPassword") ||
-                    !formData.get("oldPassword")!.toString().trim() ||
-                    !formData.has("newPassword") ||
-                    !formData.get("newPassword")!.toString().trim()
-                  )
-                    return showModal({
-                      icon: "error",
-                      title: `No puedes dejar ningún campo vacío`,
-                      buttons: "OK",
-                      submitButtonText: "Entendido",
+            <div className="sm:flex justify-between">
+              <div>
+                <p>
+                  ID: <span className="font-semibold">{profile.id}</span>
+                </p>
+                <p>
+                  Slug: <span className="font-semibold">{profile.slug}</span>
+                </p>
+                <p>
+                  Nombre: <span className="font-semibold">{profile.name}</span>
+                </p>
+                <p>
+                  Email: <span className="font-semibold">{profile.email}</span>
+                </p>
+              </div>
+              <div className="sm:w-1/2 rounded-md shadow-2xl px-6 py-4">
+                <div className="max-h-44 h-44 relative">
+                  <Image
+                    src="/Password.png"
+                    alt="change_password"
+                    layout="fill"
+                    objectFit="contain"
+                    priority
+                    quality={100}
+                  />
+                </div>
+                <p className="mt-2">Cambiar contraseña:</p>
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    const form = e.target as HTMLFormElement;
+                    const formData = new FormData(form);
+                    if (
+                      !formData.has("oldPassword") ||
+                      !formData.get("oldPassword")!.toString().trim() ||
+                      !formData.has("newPassword") ||
+                      !formData.get("newPassword")!.toString().trim()
+                    )
+                      return showModal({
+                        icon: "error",
+                        title: `No puedes dejar ningún campo vacío`,
+                        buttons: "OK",
+                        submitButtonText: "Entendido",
+                      });
+                    const updatedPass = await changePassword({
+                      oldPassword: formData.get("oldPassword")!.toString(),
+                      newPassword: formData.get("newPassword")!.toString(),
                     });
-                  const updatedPass = await changePassword({
-                    oldPassword: formData.get("oldPassword")!.toString(),
-                    newPassword: formData.get("newPassword")!.toString(),
-                  });
-                  if (updatedPass instanceof ResponseError)
-                    return unexpectedError(updatedPass);
-                  showModal({
-                    icon: "success",
-                    body: "La contraseña ha sido actualizada correctamente",
-                    timer: 1500,
-                  });
-                  (
-                    form.querySelector(
-                      `[name="oldPassword"]`
-                    )! as HTMLInputElement
-                  ).value = "";
-                  (
-                    form.querySelector(
-                      `[name="newPassword"]`
-                    )! as HTMLInputElement
-                  ).value = "";
-                }}
-                className="sm:flex items-center"
-              >
-                <Input
-                  type="password"
-                  name="oldPassword"
-                  placeholder="Introduzca su contraseña actual"
-                  className="max-w-xl mr-2"
-                  icon={<KeyIcon className="text-gray-400 h-5 w-5" />}
-                />
-                <Input
-                  type="password"
-                  name="newPassword"
-                  placeholder="Introduzca su nueva contraseña"
-                  className="max-w-xl mr-2 my-2 sm:my-0"
-                  icon={<KeyIconSolid className="text-gray-400 h-5 w-5" />}
-                />
-                <ButtonWithIcon
-                  text="Guardar"
-                  className="py-1 w-full sm:w-auto"
+                    if (updatedPass instanceof ResponseError)
+                      return unexpectedError(updatedPass);
+                    showModal({
+                      icon: "success",
+                      body: "La contraseña ha sido actualizada correctamente",
+                      timer: 1500,
+                    });
+                    (
+                      form.querySelector(
+                        `[name="oldPassword"]`
+                      )! as HTMLInputElement
+                    ).value = "";
+                    (
+                      form.querySelector(
+                        `[name="newPassword"]`
+                      )! as HTMLInputElement
+                    ).value = "";
+                  }}
+                  className=""
                 >
-                  <Save className="w-5 h-5 fill-white" />
-                </ButtonWithIcon>
-              </form>
-            </>
+                  <Input
+                    type="password"
+                    name="oldPassword"
+                    placeholder="Introduzca su contraseña actual"
+                    className="max-w-xl mr-2"
+                    icon={<KeyIcon className="text-gray-400 h-5 w-5" />}
+                  />
+                  <Input
+                    type="password"
+                    name="newPassword"
+                    placeholder="Introduzca su nueva contraseña"
+                    className="max-w-xl mr-2 my-2"
+                    icon={<KeyIconSolid className="text-gray-400 h-5 w-5" />}
+                  />
+                  <ButtonWithIcon
+                    text="Guardar"
+                    className="py-1 w-full"
+                    textClassName="font-normal"
+                  >
+                    <Save className="w-5 h-5 fill-white" />
+                  </ButtonWithIcon>
+                </form>
+              </div>
+            </div>
           )}
         </>
       )}

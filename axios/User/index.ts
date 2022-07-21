@@ -39,11 +39,11 @@ export async function updateMe(body: Partial<User>) {
 
 export async function create(
   inviteHash: string,
-  { name, password, profileImg }: { [key: string]: string }
+  { name, password }: { [key: string]: string }
 ) {
   const { status, data } = await api.post(
     "/users",
-    { name, password, profileImg, inviteHash },
+    { name, password, inviteHash },
     { withCredentials: true }
   );
   if (status !== 201) return new ResponseError(data);

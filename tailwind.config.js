@@ -14,6 +14,7 @@ module.exports = {
       animation: {
         fade: "fadeIn 0.7s ease-in-out",
         fadeorb: "fadeIn 1s ease-in-out",
+        spinorb: "spin 60s ease-in infinite",
       },
       keyframes: (theme) => ({
         fadeIn: {

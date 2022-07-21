@@ -24,7 +24,7 @@ const index = ({
     React.SetStateAction<LabWithEmployeeInfo[] | null | undefined>
   >;
 }) => {
-  const { id, name, slug, email, profileImg, owner } = user;
+  const { id, name, slug, email, owner } = user;
   const [loadingEmployeeRole, setLoadingEmployeeRole] = useState(false);
   const [loadingEmployeeDeleting, setLoadingEmployeeDeleting] = useState(false);
 
@@ -35,12 +35,12 @@ const index = ({
         <span className="hidden sm:block ml-1 font-semibold">{email}</span>
         <span className="hidden sm:block ml-1">{slug}</span>
       </p>
-      <div className="flex items-center">
+      <div className="flex items-center min-w-fit">
         <ButtonWithIcon
           text={`${loadingEmployeeRole ? "Haciendo" : "Hacer"} ${
             owner ? "empleado" : "encargado"
           }`}
-          className="py-1 font-semibold"
+          className="py-1 font-semibold text-sm"
           textClassName="hidden sm:block"
           disabled={loadingEmployeeRole}
           onClick={() => {
@@ -78,7 +78,7 @@ const index = ({
           text={`${
             loadingEmployeeDeleting ? "Removiendo" : "Remover"
           } del laboratorio`}
-          className={`ml-2 py-1 bg-red-500 border-red-300 ${
+          className={`text-sm ml-2 py-1 bg-red-500 border-red-300 ${
             loadingEmployeeDeleting
               ? ""
               : "hover:bg-red-900 hover:border-red-500"
