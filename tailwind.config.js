@@ -1,4 +1,9 @@
 module.exports = {
+  safelist: [
+    {
+      pattern: /(bg|text)-(amber|violet|teal)-(700|800|900)/,
+    },
+  ],
   content: [
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
@@ -38,11 +43,14 @@ module.exports = {
       },
       minWidth: {
         screen: "100vw",
+        5: "1.25rem",
       },
       zIndex: {
         1: "1",
         2: "2",
         3: "3",
+        50: "50",
+        51: "51",
       },
     },
   },

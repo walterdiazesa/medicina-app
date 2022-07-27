@@ -41,7 +41,11 @@ import {
 } from "@react-pdf/renderer/lib/react-pdf.browser.cjs";
 import { Auth } from "../../../types/Auth";
 import NextImage from "next/image";
-import { getTestId, getTestItemName } from "../../../types/Test";
+import {
+  getTestCategory,
+  getTestId,
+  getTestItemName,
+} from "../../../types/Test";
 import {
   ButtonWithIcon,
   Input,
@@ -553,38 +557,26 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
         </div>
       </Modal>
       <div className={`max-w-6xl my-8 ${!test.validator && "mb-16"}`}>
-        <div id="qr_canvas"></div>
         <h1 className="text-2xl sm:text-4xl font-mono text-gray-800 font-bold">
           {getTestId(test)}
-          {auth!["sub-lab"].length > 1 && (
-            <span className="ml-2 text-base font-normal text-gray-600 font-sans hidden sm:block">
-              {new Date(test.date).format("DD/MM/YYYY HH:MM A")}
-            </span>
-          )}
+          <span
+            className={`ml-3 absolute -translate-y-0.5 text-${
+              getTestCategory(test).color
+            }`}
+          >
+            [{getTestCategory(test).text.toUpperCase()}]
+          </span>
         </h1>
-        {auth!["sub-lab"].length > 1 ? (
-          <>
-            <p className="text-gray-800">
-              Laboratorio:{" "}
-              <span className="font-bold text-teal-500">
-                {test.lab?.name || "Ninguno"}
-              </span>
-            </p>
-            <p className="text-gray-800 sm:hidden">
-              Creado el:{" "}
-              <span className="font-bold">
-                {new Date(test.date).format("DD/MM/YYYY HH:MM A")}
-              </span>
-            </p>
-          </>
-        ) : (
-          <p className="text-gray-800">
-            Creado el:{" "}
-            <span className="font-bold">
-              {new Date(test.date).format("DD/MM/YYYY HH:MM A")}
-            </span>
-          </p>
-        )}
+        <p className="text-gray-800">
+          Laboratorio:{" "}
+          <span className="font-bold">{test.lab?.name || "Ninguno"}</span>
+        </p>
+        <p className="text-gray-800">
+          Creado el:{" "}
+          <span className="font-bold">
+            {new Date(test.date).format("DD/MM/YYYY HH:MM A")}
+          </span>
+        </p>
         {/* Test info */}
         <div className="my-4">
           {!test.patient ? (
@@ -675,19 +667,6 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
             </div>
           )}
           <div className="rounded-md shadow-lg bg-gradient-to-br from-[#e9e9e9] sm:from-[#f0f0f0] to-white px-4 py-2 mb-2">
-            {(!test.patient || test.sex !== test.patient.sex) && (
-              <p
-                className={`flex items-center ${
-                  !test.patient ? "text-gray-800" : "text-yellow-600"
-                }`}
-              >
-                {test.patient && (
-                  <ExclamationCircleIcon className="h-5 w-5 mr-1" />
-                )}
-                Sexo del paciente según el analizador:
-                <span className="font-bold ml-1">{test.sex}</span>
-              </p>
-            )}
             <p className="font-bold text-gray-800">Tests:</p>
             <div
               className={`${test.tests.length > 4 && "sm:grid"} grid-cols-3`}

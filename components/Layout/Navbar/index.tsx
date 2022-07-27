@@ -152,18 +152,21 @@ const index = ({
                 isAuth ? "justify-between" : "justify-end"
               } h-16`}
             >
-              <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
-                <Disclosure.Button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-200">
-                  <span className="sr-only">Open main menu</span>
-                  {open ? (
-                    <XIcon className="block h-6 w-6" aria-hidden="true" />
-                  ) : (
-                    <MenuIcon className="block h-6 w-6" aria-hidden="true" />
-                  )}
-                </Disclosure.Button>
-              </div>
               {isAuth ? (
                 <>
+                  <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
+                    <Disclosure.Button className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-200">
+                      <span className="sr-only">Open main menu</span>
+                      {open ? (
+                        <XIcon className="block h-6 w-6" aria-hidden="true" />
+                      ) : (
+                        <MenuIcon
+                          className="block h-6 w-6"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </Disclosure.Button>
+                  </div>
                   <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
                     <div className="hidden sm:block sm:ml-6">
                       <div className="flex space-x-4">
@@ -216,16 +219,18 @@ const index = ({
                               static
                               className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-gray-100 ring-1 ring-black ring-opacity-5 focus:outline-none 2xl:z-50"
                             >
-                              <Menu.Button as="div">
-                                <Link href="/profile">
-                                  <a className="hover:bg-gray-200 cursor-pointer flex px-4 py-2 text-sm text-gray-500 items-center">
-                                    <UserIcon className="w-4 h-4 mr-1.5" />
-                                    <span className="transform translate-y-1.4px">
-                                      Mi perfil
-                                    </span>
-                                  </a>
-                                </Link>
-                              </Menu.Button>
+                              {isAuth["sub-user"] && (
+                                <Menu.Button as="div">
+                                  <Link href="/profile">
+                                    <a className="hover:bg-gray-200 cursor-pointer flex px-4 py-2 text-sm text-gray-500 items-center">
+                                      <UserIcon className="w-4 h-4 mr-1.5" />
+                                      <span className="transform translate-y-1.4px">
+                                        Mi perfil
+                                      </span>
+                                    </a>
+                                  </Link>
+                                </Menu.Button>
+                              )}
                               {isAuth["sub-lab"].length && (
                                 <Menu.Button as="div">
                                   <Link href="/lab">

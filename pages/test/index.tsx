@@ -21,7 +21,7 @@ import { useRouter } from "next/router";
 import { ResponseError } from "../../types/Responses";
 import { Input, Modal } from "../../components";
 import { showModal } from "../../components/Modal/showModal";
-import { normalizeTestCustomId } from "../../types/Test";
+import { getTestCategory, normalizeTestCustomId } from "../../types/Test";
 import dynamic from "next/dynamic";
 import { unexpectedError } from "../../utils/Error";
 
@@ -126,14 +126,37 @@ const index = () => {
                   )}
                   <div className="rounded-sm bg-zinc-50 hover:bg-zinc-100 px-2 py-2 shadow-md my-4 flex items-center justify-between cursor-pointer">
                     <div className="flex items-center">
+                      <div className="flex items-center h-full">
+                        <span
+                          className={`sm:hidden h-2 w-2 rounded-full bg-${
+                            getTestCategory(test).color
+                          } mr-2`}
+                        ></span>
+                        <span
+                          className={`hidden sm:block lg:hidden text-${
+                            getTestCategory(test).color
+                          } font-mono font-extrabold mr-1`}
+                        >
+                          [
+                          {getTestCategory(test).text.match(/[A-Z]/g)?.join("")}
+                          ]
+                        </span>
+                        <span
+                          className={`hidden lg:block text-${
+                            getTestCategory(test).color
+                          } font-mono font-semibold mr-2 truncate`}
+                        >
+                          [{getTestCategory(test).text.toUpperCase()}]
+                        </span>
+                      </div>
                       <div className="h-full w-5 mr-2">
                         <UserIcon
                           className={`h-5 w-5 ${
-                            test.sex === "Femenino"
-                              ? "text-pink-400"
-                              : test.sex === "Masculino"
+                            !test.patient
+                              ? "text-gray-700"
+                              : test.patient.sex === "Masculino"
                               ? "text-sky-600"
-                              : "text-gray-700"
+                              : "text-pink-400"
                           }`}
                         />
                       </div>
@@ -171,7 +194,7 @@ const index = () => {
                     </div>
                     <div className="flex items-center truncate">
                       {test.validatorId && (
-                        <BadgeCheckIcon className="h-5 w-5 mr-2 text-teal-500" />
+                        <BadgeCheckIcon className="h-5 min-w-5 mr-2 text-teal-500" />
                       )}
                       <DocumentDownloadIcon
                         onClick={async (e) => {
@@ -181,12 +204,12 @@ const index = () => {
                             return unexpectedError(_accessLink);
                           window.open(_accessLink, "_blank");
                         }}
-                        className="h-5 w-5 mr-2 text-red-500 hover:text-red-900 cursor-pointer"
+                        className="h-5 min-w-5 mr-2 text-red-500 hover:text-red-900 cursor-pointer"
                       />
                       {/* <DocumentReportIcon className="h-5 w-5 mr-2 text-green-700 hover:text-green-900" />
                   <DocumentTextIcon className="h-5 w-5 mr-2 text-blue-500 hover:text-blue-700" /> */}
                       <p
-                        className={`text-gray-500 font-semibold text-sm sm:text-base hidden sm:block`}
+                        className={`text-gray-500 font-semibold text-sm sm:text-base hidden sm:block truncate`}
                       >
                         [
                         {(
@@ -217,7 +240,7 @@ const index = () => {
                             _tests!.filter(({ id }) => id !== test.id)
                           );
                         }}
-                        className="h-5 w-5 ml-2 text-gray-400 hover:text-red-500"
+                        className="h-5 min-w-5 ml-2 text-gray-400 hover:text-red-500"
                       />
                     </div>
                   </div>

@@ -16,7 +16,7 @@ import React, { useEffect, useState } from "react";
 import { ResponseError } from "../../../types/Responses";
 import ButtonWithIcon from "../../Button/ButtonWithIcon";
 import { EmployeeCard } from "../../Card";
-import { Spinner } from "../../Icons";
+import { Save, Spinner } from "../../Icons";
 import { showModal } from "../../Modal/showModal";
 import { patchUsers as inviteUser, updateLab } from "../../../axios/Lab";
 import { Dialog, Switch } from "@headlessui/react";
@@ -243,6 +243,84 @@ const index = ({
             />
           </div>
         </Transition>
+        <div className="mb-2">
+          <p className="font-semibold mr-2">ID del siguiente exámen:</p>
+          <form
+            className="flex items-center"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const customIdStartFromInput = new FormData(
+                e.target as HTMLFormElement
+              ).get("customIdStartFrom");
+              if (!customIdStartFromInput) return;
+              if (
+                !customIdStartFromInput.toString().trim() ||
+                +customIdStartFromInput.toString() !==
+                  +customIdStartFromInput.toString() ||
+                !Number.isInteger(+customIdStartFromInput.toString()) ||
+                parseInt(customIdStartFromInput.toString()) < 0
+              )
+                return showModal({
+                  icon: "error",
+                  title: !customIdStartFromInput.toString()
+                    ? "No puedes dejar el número para iniciar el conteo de exámenes vacío"
+                    : "Debes de digitar un número entero positivo (incluyendo el 0)",
+                  buttons: "OK",
+                  submitButtonText: "Entendido",
+                });
+
+              setUpdatingLabPreferences(true);
+              const labRequest = await updateLab(lab.id, {
+                preferences: {
+                  ...lab.preferences,
+                  customIdStartFrom: parseInt(
+                    customIdStartFromInput.toString()
+                  ),
+                },
+              });
+              setUpdatingLabPreferences(false);
+              if (labRequest instanceof ResponseError)
+                return unexpectedError(labRequest);
+              setLabInfo((_labInfo) => {
+                const newLabInfo = [..._labInfo!];
+                newLabInfo[labIdx].preferences.customIdStartFrom = parseInt(
+                  customIdStartFromInput.toString()
+                );
+                return newLabInfo;
+              });
+              showModal({
+                icon: "success",
+                body: `El próximo exámen tendrá la ID "<b>${normalizeTestCustomId(
+                  lab.preferences.customIdStartFrom!,
+                  lab.preferences.leadingZerosWhenCustomId!
+                )}</b>", después de ese examen se contará en correlativo desde el número "<b>${
+                  lab.preferences.customIdStartFrom
+                }</b>"`,
+                buttons: "OK",
+              });
+            }}
+          >
+            <Input
+              type="text"
+              name="customIdStartFrom"
+              defaultValue={
+                lab.preferences.customIdStartFrom
+                  ? lab.preferences.customIdStartFrom.toString()
+                  : ""
+              }
+              placeholder=""
+              className="mr-2 max-w-fit"
+              onChange={(e) => {
+                const typedKey = (e.nativeEvent as InputEvent).data || "";
+                if (+typedKey !== +typedKey)
+                  e.target.value = e.target.value.slice(0, -1);
+              }}
+            />
+            <ButtonWithIcon text="" textClassName="ml-0" className="py-1">
+              <Save className="h-5 w-5 fill-white" />
+            </ButtonWithIcon>
+          </form>
+        </div>
       </div>
     </>
   );
@@ -268,7 +346,7 @@ const index = ({
                 className="h-7 w-7 text-gray-500 inline-block sm:block mr-1.5"
                 aria-hidden="true"
               />
-              Administrar empleados para <b>{lab.name}</b>
+              Administrar empleados para <b className="sm:ml-1">{lab.name}</b>
             </Dialog.Title>
             <div className="mt-2">
               <div className="flex mb-3">
@@ -288,7 +366,8 @@ const index = ({
                   } empleado`}
                   className="py-1 font-semibold text-sm min-w-max"
                   textClassName="hidden sm:block"
-                  onClick={async () => {
+                  onClick={async (e) => {
+                    e.preventDefault();
                     const emailInput = document.querySelector(
                       `input[name="email"]`
                     ) as HTMLInputElement;

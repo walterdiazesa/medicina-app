@@ -17,6 +17,12 @@ const dict: { [key: string]: { [msg: string]: string } } = {
   preferences: {
     "Invalid leadingZerosWhenCustomId property > Outside bounds":
       "La propiedad sale fuera de los valores preestablecidos",
+    "Invalid leadingZerosWhenCustomId property > Not a integer":
+      "La propiedad no es un número entero",
+    "Invalid customIdStartFrom property > Outside bounds":
+      "La propiedad sale fuera de los valores preestablecidos",
+    "Invalid customIdStartFrom property > Not a integer":
+      "La propiedad no es un número entero",
   },
   storage: {
     "Invalid image storage host": "Hosting de imágenes no permitido",

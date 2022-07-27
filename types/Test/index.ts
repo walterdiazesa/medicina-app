@@ -1,4 +1,4 @@
-import { Lab, Test } from "../Prisma";
+import { Lab, Test, TestCategory, TestCategoryDict } from "../Prisma";
 
 const testItemKeyValue: {
   [key: string]: { name: string; desc: string; group: string };
@@ -158,6 +158,26 @@ const testItemKeyValue: {
     desc: "Un nivel de cloruro superior a lo normal se denomina hipercloremia y puede deberse a: Intoxicación con bromuro, Inhibidores de la anhidrasa carbónica (utilizados para tratar glaucoma), Diarrea, Acidosis metabólica, Alcalosis respiratoria (compensada), Acidosis tubular renal Un nivel de cloruro inferior a lo normal se denomina hipocloremia y puede deberse a: Enfermedad de Addison, Síndrome de Bartter, Quemaduras, Insuficiencia cardíaca congestiva, Deshidratación, Sudoración excesiva, Succión gástrica, Hiperaldosteronismo, Alcalosis metabólica, Acidosis respiratoria (compensada), Síndrome de secreción inadecuada de hormona antidiurética (SIHAD), Vómitos",
     group: "Electrolitos",
   },
+};
+
+export const testCategories: TestCategoryDict = {
+  DRYCHEM: {
+    text: "Química Seca",
+    color: "teal-700",
+  },
+  HEMA: {
+    text: "Hematología",
+    color: "amber-900",
+  },
+  TCUSTOM: {
+    text: "Pruebas Especiales",
+    color: "violet-800",
+  },
+};
+
+export const getTestCategory = (test: Test) => {
+  if (!test.category) return testCategories.DRYCHEM; // "Sin categorizar"
+  return testCategories[test.category];
 };
 
 export const getTestItemName = (test: string) => {

@@ -27,7 +27,7 @@ function layout() {
   document.body.style.overflow = "hidden";
   document.body.style.position = "fixed"; */
   modal.className =
-    "w-screen h-screen absolute z-50 inset-0 transition-opacity duration-200 ease-linear bg-gray-700 bg-opacity-60 opacity-0";
+    "w-screen h-screen absolute z-51 inset-0 transition-opacity duration-200 ease-linear bg-gray-700 bg-opacity-60 opacity-0";
   modal.style.marginTop = `${window.scrollY}px`;
   //modal.style.minHeight = "100vh";
   modal.style.height = "calc(100vh + 1px)";

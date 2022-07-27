@@ -1,20 +1,16 @@
 import React from "react";
 
-const ButtonWithIcon = ({
-  children: icon,
-  text,
+const Button = ({
+  children,
   className,
   onClick,
   name,
-  textClassName = "",
   disabled,
 }: {
-  children: JSX.Element;
-  text: string;
+  children: string;
   className?: string;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   name?: string;
-  textClassName?: string;
   disabled?: boolean;
 }) => {
   return (
@@ -33,13 +29,12 @@ const ButtonWithIcon = ({
         !className || className.search(/bg|border/) === -1
           ? "bg-teal-500 border-teal-700"
           : ""
-      } rounded align-middle inline-flex items-center`}
+      } rounded align-middle inline-flex items-center justify-center`}
       disabled={disabled}
     >
-      {icon}
-      <span className={`ml-2 ${textClassName}`}>{text}</span>
+      {children}
     </button>
   );
 };
 
-export default ButtonWithIcon;
+export default Button;

@@ -15,6 +15,7 @@ const SECURE_ROUTES = new Set([
 ]);
 const SECURE_ROUTES_REGEX = new Set([
   /register\/\w*/,
+  /pricing\?.*/,
   /test\/[a-f\d]{24}(?:[?]access=)\w*/i,
 ]);
 
@@ -72,7 +73,7 @@ const index = ({ children }: { children: JSX.Element }) => {
         ) : (
           <div
             className={`min-w-full min-h-[calc(100vh-8rem)] ${
-              !["/", "/register", "/register/[hash]"].includes(
+              !["/", "/register", "/register/[hash]", "/pricing"].includes(
                 router.pathname
               ) && "px-2 md:px-8"
             } ${router.pathname !== "/404" && "pt-16"}`}

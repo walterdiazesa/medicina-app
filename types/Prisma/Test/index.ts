@@ -9,6 +9,18 @@ export interface TestItem {
   range?: { item: number; between: { from: number; to: number } };
 }
 
+export const TestCategory = {
+  DRYCHEM: "DRYCHEM",
+  TCUSTOM: "TCUSTOM",
+  HEMA: "HEMA",
+} as const;
+
+export type TestCategory = typeof TestCategory[keyof typeof TestCategory];
+
+export type TestCategoryDict = {
+  [key in TestCategory]: { text: string; color: string };
+};
+
 export interface Test {
   id?: string;
   customId: number;
@@ -21,8 +33,8 @@ export interface Test {
   validated: Date;
   patientId: string;
   patient?: Patient;
-  sex: "Masculino" | "Femenino" | "No especificado";
   remark?: { text: string; by: string } | null;
   date: Date;
+  category: TestCategory;
   tests: TestItem[];
 }

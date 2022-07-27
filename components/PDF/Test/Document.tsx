@@ -155,7 +155,7 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
             <ReportItem element="Solicitud" value={getTestId(test)} />
             <ReportItem element="Paciente" value={test.patient!.name} />
             <ReportItem element="ID" value={test.patient!.dui} />
-            <ReportItem element="Sexo" value={test.sex} />
+            <ReportItem element="Sexo" value={test.patient!.sex} />
             <ReportItem
               element="Edad"
               value={`${new Date(
