@@ -40,10 +40,12 @@ module.exports = {
       minHeight: {
         "4-25": "100px",
         "screen-navbar": "calc(100vh - 4rem)",
+        8: "2rem",
       },
       minWidth: {
         screen: "100vw",
         5: "1.25rem",
+        8: "2rem",
       },
       zIndex: {
         1: "1",

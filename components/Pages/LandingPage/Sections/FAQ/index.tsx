@@ -31,7 +31,7 @@ const FAQS: { q: string; a: string }[] = [
           <li>2- Descarga el <a href="/about-listener" class="text-teal-500 hover:text-teal-300">ejecutable</a> que se genera al crear tu laboratorio</li>
           <li>3- Elije alguno de los <a href="/pricing" class="text-teal-500 hover:text-teal-300">planes</a> que se adecúe a las necesidades de tu laboratorio</li>
           <li>4- Sigue los pasos de nuestra <a href="/quick-start" class="text-teal-500 hover:text-teal-300">guía de inicio rápido</a> para capturar los exámenes tu equipo de análisis químico</li>
-          <li>5- ¡Crea tu primer exámen y espera que aparezca instantáneamente en la página de <a href="/about-listener" class="text-teal-500 hover:text-teal-300">exámenes</a> de tu laboratorio!</li>
+          <li>5- ¡Crea tu primer exámen y espera que aparezca instantáneamente en la página de <a href="/test" class="text-teal-500 hover:text-teal-300">exámenes</a> de tu laboratorio!</li>
         </ul>`,
   },
 ];

@@ -14,4 +14,10 @@ const Home = ({ auth }: { auth?: Auth }) => {
   );
 };
 
+export async function getStaticProps() {
+  return {
+    props: {},
+  };
+}
+
 export default Home;

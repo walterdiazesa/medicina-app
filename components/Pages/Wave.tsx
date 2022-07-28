@@ -1,15 +1,18 @@
-import React from "react";
+import React, { CSSProperties } from "react";
 
 const Wave = ({
   className,
   inverted,
+  style,
 }: {
   className?: string;
   inverted?: true;
+  style?: CSSProperties;
 }) => {
   return (
     <div
       className={`bg-gradient-to-br from-teal-200 to-teal-500 ${className} w-screen`}
+      {...(style && { style })}
     >
       {!inverted ? (
         <svg

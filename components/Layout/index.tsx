@@ -9,6 +9,8 @@ import { Spinner } from "../Icons";
 const SECURE_ROUTES = new Set([
   "/",
   "/pricing",
+  "/quick-start",
+  "/about-listener",
   "/register",
   "/register/[hash]",
   "/_error",
@@ -73,9 +75,14 @@ const index = ({ children }: { children: JSX.Element }) => {
         ) : (
           <div
             className={`min-w-full min-h-[calc(100vh-8rem)] ${
-              !["/", "/register", "/register/[hash]", "/pricing"].includes(
-                router.pathname
-              ) && "px-2 md:px-8"
+              ![
+                "/",
+                "/register",
+                "/register/[hash]",
+                "/pricing",
+                "/quick-start",
+                "/about-listener",
+              ].includes(router.pathname) && "px-2 md:px-8"
             } ${router.pathname !== "/404" && "pt-16"}`}
           >
             {{ ...children, props: { ...children.props, auth, setAuth } }}

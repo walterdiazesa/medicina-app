@@ -7,6 +7,7 @@ import { Spinner } from "../components/Icons";
 import { listen, unListen } from "../socketio";
 import { Auth } from "../types/Auth";
 import { Lab } from "../types/Prisma/Lab";
+import Quickstart from "../components/Pages/Quickstart";
 
 const listener = ({
   auth,
@@ -70,26 +71,33 @@ const listener = ({
           No estás afiliado a ningún laboratorio.
         </p>
       ) : (
-        installers.map(({ installer, name }) => (
-          <div
-            key={name}
-            className="flex items-center justify-center md:justify-start my-2"
-          >
-            <p className="mr-2 font-bold text-gray-700">{name}:</p>
-            {installer === "generating" ? (
-              <p className="ml-2 text-gray-500 animate-pulse flex items-center cursor-default">
-                <Spinner pulse color="text-gray-500" />
-                Generando...
-              </p>
-            ) : (
-              <a href={installer!} download>
-                <ButtonWithIcon text="Descargar" className="py-1">
-                  <DownloadIcon className="text-white h-5 w-5" />
-                </ButtonWithIcon>
-              </a>
-            )}
-          </div>
-        ))
+        <>
+          {installers.map(({ installer, name }) => (
+            <div
+              key={name}
+              className="flex items-center justify-center md:justify-start my-2"
+            >
+              <p className="mr-2 font-bold text-gray-700">{name}:</p>
+              {installer === "generating" ? (
+                <p className="ml-2 text-gray-500 animate-pulse flex items-center cursor-default">
+                  <Spinner pulse color="text-gray-500" />
+                  Generando...
+                </p>
+              ) : (
+                <a href={installer!} download>
+                  <ButtonWithIcon text="Descargar" className="py-1">
+                    <DownloadIcon className="text-white h-5 w-5" />
+                  </ButtonWithIcon>
+                </a>
+              )}
+            </div>
+          ))}
+          <h2 className="mt-8 mb-4 text-lg font-semibold">
+            ¿No sabes qué hacer?
+            <span className="ml-1 text-teal-500">Guía de inicio rápido:</span>
+          </h2>
+          <Quickstart />
+        </>
       )}
     </div>
   );
