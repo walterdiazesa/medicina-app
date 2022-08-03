@@ -231,7 +231,7 @@ const index = ({
                                   </Link>
                                 </Menu.Button>
                               )}
-                              {isAuth["sub-lab"].length && (
+                              {isAuth["sub-lab"].length > 0 && (
                                 <Menu.Button as="div">
                                   <Link href="/lab">
                                     <a className="hover:bg-gray-200 cursor-pointer flex px-4 py-2 text-sm text-gray-500 items-center">
