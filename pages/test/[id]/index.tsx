@@ -643,24 +643,29 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
               </p>
               <div className="sm:flex items-center">
                 <p className="mr-4">{test.patient.name}</p>
-                <p className="flex items-center mr-4">
-                  <IdentificationIcon className="h-5 w-5 text-gray-600" />:{" "}
+                <p className="flex flex-row sm:flex-col lg:flex-row items-center mr-4">
+                  <IdentificationIcon className="h-5 w-5 text-gray-600" />
+                  <span className="md:hidden lg:inline mr-1">:</span>
                   {test.patient.dui}
                 </p>
-                <p className="flex items-center mr-4">
-                  <UserIcon className="h-5 w-5 text-gray-600" />:{" "}
+                <p className="flex flex-row sm:flex-col lg:flex-row items-center mr-4">
+                  <UserIcon className="h-5 w-5 text-gray-600" />
+                  <span className="md:hidden lg:inline mr-1">:</span>
                   {test.patient.sex}
                 </p>
-                <p className="flex items-center mr-4">
-                  <CakeIcon className="h-5 w-5 text-gray-600" />:{" "}
+                <p className="flex flex-row sm:flex-col lg:flex-row items-center mr-4">
+                  <CakeIcon className="h-5 w-5 text-gray-600" />
+                  <span className="md:hidden lg:inline mr-1">:</span>
                   {new Date(test.patient.dateBorn).toLocaleDateString()}
                 </p>
-                <p className="flex items-center mr-4">
-                  <PhoneIcon className="h-5 w-5 text-gray-600" />:{" "}
+                <p className="flex flex-row sm:flex-col lg:flex-row items-center mr-4">
+                  <PhoneIcon className="h-5 w-5 text-gray-600" />
+                  <span className="md:hidden lg:inline mr-1">:</span>
                   {test.patient.phone}
                 </p>
-                <p className="flex items-center mr-4">
-                  <MailIcon className="h-5 w-5 text-gray-600" />:{" "}
+                <p className="flex flex-row sm:flex-col lg:flex-row items-center mr-4">
+                  <MailIcon className="h-5 w-5 text-gray-600" />
+                  <span className="md:hidden lg:inline mr-1">:</span>
                   {test.patient.email}
                 </p>
               </div>
@@ -669,16 +674,54 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
           <div className="rounded-md shadow-lg bg-gradient-to-br from-[#e9e9e9] sm:from-[#f0f0f0] to-white px-4 py-2 mb-2">
             <p className="font-bold text-gray-800">Tests:</p>
             <div
-              className={`${test.tests.length > 4 && "sm:grid"} grid-cols-3`}
+              className={`${
+                test.tests.length > 4 && "sm:grid"
+              } grid-cols-2 gap-3 space-y-2 sm:space-y-0`}
             >
-              {test.tests.map((item) => (
-                <p key={item.name}>
-                  {getTestItemName(item.name).name} {item.assign} {item.value}
-                  {!item.range
-                    ? ""
-                    : `(${item.range.item}) ${item.range.between.from} - ${item.range.between.to}`}
-                </p>
-              ))}
+              {test.tests.map((item) => {
+                const value = parseInt(item.value);
+                const magnitude = item.value.replace(/\d+/, "");
+                const showWarning =
+                  item.range &&
+                  (value < item.range.between.from ||
+                    value > item.range.between.to);
+                return (
+                  <p key={item.name}>
+                    <span
+                      className={`font-bold ${
+                        showWarning && "inline-flex items-baseline"
+                      }`}
+                    >
+                      {showWarning && (
+                        <ExclamationCircleIcon className="translate-y-[5px] h-5 w-5 mr-1 text-yellow-600" />
+                      )}
+                      {getTestItemName(item.name).name}
+                    </span>{" "}
+                    {item.assign}{" "}
+                    <span
+                      {...(showWarning && { className: "text-yellow-600" })}
+                    >
+                      {value}
+                    </span>{" "}
+                    {magnitude},{" "}
+                    <span className="inline-block">
+                      <span className="font-bold lg:hidden">rango: </span>
+                      <span className="font-bold hidden lg:inline">
+                        rango de referencia:{" "}
+                      </span>
+                      {item.range ? (
+                        <span
+                          {...(showWarning && { className: "text-yellow-600" })}
+                        >
+                          {` ${257} - ${355}`}
+                        </span>
+                      ) : (
+                        "-"
+                      )}
+                    </span>
+                  </p>
+                );
+              })}
             </div>
           </div>
           <p className="font-bold text-gray-800 sm:flex items-center">
