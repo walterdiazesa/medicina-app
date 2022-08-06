@@ -60,6 +60,7 @@ import { Dialog } from "@headlessui/react";
 import { showModal } from "../../../components/Modal/showModal";
 import { getLaboratory } from "../../../axios/Lab";
 import { unexpectedError } from "../../../utils/Error";
+import { PatientCard } from "../../../components/Card";
 
 type SearchListItem = {
   value: number | string;
@@ -637,38 +638,11 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
               </div>
             </div>
           ) : (
-            <div className="rounded-md shadow-lg bg-gradient-to-br from-[#e9e9e9] sm:from-[#f0f0f0] to-white px-4 py-2 mb-2">
+            <div className="rounded-md shadow-lg bg-gradient-to-br from-[#e9e9e9] sm:from-[#f0f0f0] to-white px-4 py-2 mb-4">
               <p className="text-gray-800 font-bold">
                 Información del paciente
               </p>
-              <div className="sm:flex items-center">
-                <p className="mr-4">{test.patient.name}</p>
-                <p className="flex flex-row sm:flex-col lg:flex-row items-center mr-4">
-                  <IdentificationIcon className="h-5 w-5 text-gray-600" />
-                  <span className="md:hidden lg:inline mr-1">:</span>
-                  {test.patient.dui}
-                </p>
-                <p className="flex flex-row sm:flex-col lg:flex-row items-center mr-4">
-                  <UserIcon className="h-5 w-5 text-gray-600" />
-                  <span className="md:hidden lg:inline mr-1">:</span>
-                  {test.patient.sex}
-                </p>
-                <p className="flex flex-row sm:flex-col lg:flex-row items-center mr-4">
-                  <CakeIcon className="h-5 w-5 text-gray-600" />
-                  <span className="md:hidden lg:inline mr-1">:</span>
-                  {new Date(test.patient.dateBorn).toLocaleDateString()}
-                </p>
-                <p className="flex flex-row sm:flex-col lg:flex-row items-center mr-4">
-                  <PhoneIcon className="h-5 w-5 text-gray-600" />
-                  <span className="md:hidden lg:inline mr-1">:</span>
-                  {test.patient.phone}
-                </p>
-                <p className="flex flex-row sm:flex-col lg:flex-row items-center mr-4">
-                  <MailIcon className="h-5 w-5 text-gray-600" />
-                  <span className="md:hidden lg:inline mr-1">:</span>
-                  {test.patient.email}
-                </p>
-              </div>
+              <PatientCard {...test.patient} />
             </div>
           )}
           <div className="rounded-md shadow-lg bg-gradient-to-br from-[#e9e9e9] sm:from-[#f0f0f0] to-white px-4 py-2 mb-2">

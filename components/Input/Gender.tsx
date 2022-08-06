@@ -3,31 +3,26 @@ import { ChevronDownIcon, UserIcon } from "@heroicons/react/outline";
 import React, { useEffect, useRef, useState } from "react";
 import { Transition } from "../";
 
+type Gender = "Masculino" | "Femenino" | "No especificado";
+
 const Gender = ({
   name,
   className,
   onChangeValue,
   placeholder,
+  defaultValue,
 }: {
   name?: string;
   placeholder?: string;
   className?: string;
   onChangeValue?: (value: string) => void;
+  defaultValue?: Gender;
 }) => {
   const [selectedGender, setSelectedGender] = useState<
-    undefined | { element: JSX.Element; value: string }
+    undefined | { element: JSX.Element; value: Gender }
   >(undefined);
 
   const genderValueForm = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (selectedGender) {
-      if (onChangeValue)
-        setTimeout(() => onChangeValue(selectedGender.value), 0);
-      genderValueForm.current!.value = selectedGender.value;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedGender]);
 
   const GenderMale = () => {
     return (
@@ -56,6 +51,31 @@ const Gender = ({
     );
   };
 
+  useEffect(() => {
+    if (selectedGender) {
+      if (onChangeValue)
+        setTimeout(() => onChangeValue(selectedGender.value), 0);
+      genderValueForm.current!.value = selectedGender.value;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedGender]);
+
+  useEffect(() => {
+    if (defaultValue) {
+      setSelectedGender({
+        element:
+          defaultValue === "Masculino" ? (
+            <GenderMale />
+          ) : defaultValue === "Femenino" ? (
+            <GenderFemale />
+          ) : (
+            <GenderPriv />
+          ),
+        value: defaultValue,
+      });
+    }
+  }, [defaultValue]);
+
   return (
     <Menu as="div" className={`${className} relative my-4`}>
       {({ open }) => (
@@ -66,7 +86,7 @@ const Gender = ({
               ref={genderValueForm}
               {...(name && { name })}
             />
-            <Menu.Button className="flex w-full py-1.5 text-sm text-gray-400 rounded-md pr-3 pl-3 border-2 border-gray focus:border-gray-600 focus:border-opacity-40 focus:outline-none bg-white focus:text-gray-600">
+            <Menu.Button className="flex items-center w-full py-1.5 text-sm text-gray-400 rounded-md pr-3 pl-3 border-2 border-gray focus:border-gray-600 focus:border-opacity-40 focus:outline-none bg-white focus:text-gray-600">
               {selectedGender?.element || (
                 <a>{placeholder || "Selecciona tu género"}</a>
               )}

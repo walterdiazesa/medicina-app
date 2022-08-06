@@ -17,3 +17,14 @@ export const create = async (patient: Patient) => {
   if (status !== 201) return new ResponseError(data);
   return data as Patient;
 };
+
+export const update = async (
+  id: string,
+  patient: Partial<Omit<Patient, "id">>
+) => {
+  const { status, data } = await api.patch(`/patients/${id}`, patient, {
+    withCredentials: true,
+  });
+  if (status !== 200) return new ResponseError(data);
+  return data as Patient;
+};

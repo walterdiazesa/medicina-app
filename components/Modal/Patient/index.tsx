@@ -61,6 +61,7 @@ const EditModal = ({
               name="sex"
               placeholder="Selecciona el género del paciente"
               className="z-3"
+              {...(type === "edit" && { defaultValue: patient.sex as Gender })}
             />
             <Input
               placeholder="Ingrese el correo del paciente"
@@ -77,6 +78,7 @@ const EditModal = ({
               type="text"
               name="phone"
               className="mt-3"
+              {...(type === "edit" && { defaultValue: patient.phone })}
               icon={
                 <PhoneIcon className="w-4 h-4 focus:outline-none focus:shadow-outline" />
               }
