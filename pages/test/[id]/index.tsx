@@ -61,6 +61,7 @@ import { showModal } from "../../../components/Modal/showModal";
 import { getLaboratory } from "../../../axios/Lab";
 import { unexpectedError } from "../../../utils/Error";
 import { PatientCard } from "../../../components/Card";
+import { isValidEmail } from "../../../utils/Email";
 
 type SearchListItem = {
   value: number | string;
@@ -386,6 +387,15 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
         disableCloseWhenTouchOutside
         submitCallback={async (items: Patient) => {
           items["dateBorn"] = new Date(items["dateBorn"]);
+
+          if (!isValidEmail(items.email.trim()))
+            return showModal({
+              icon: "error",
+              title: "El correo proporcionado no es válido",
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            });
+
           const patient = await create(items);
           if (patient instanceof ResponseError) return unexpectedError(patient);
           const selectedNewPatient = {

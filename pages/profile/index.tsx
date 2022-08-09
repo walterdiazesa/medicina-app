@@ -11,7 +11,7 @@ import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { changePassword } from "../../axios/Auth";
 import { requestPutObjectURL } from "../../axios/Files";
-import { me, updateMe } from "../../axios/User";
+import { me } from "../../axios/User";
 import { Attachment, ButtonWithIcon, Input } from "../../components";
 import { Save, Spinner } from "../../components/Icons";
 import { showModal } from "../../components/Modal/showModal";

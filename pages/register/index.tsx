@@ -24,6 +24,7 @@ import Wave from "../../components/Pages/Wave";
 import SectionPage from "../../components/Pages/SectionPage";
 import { requestPutObjectURL } from "../../axios/Files";
 import axios from "axios";
+import { isValidEmail } from "../../utils/Email";
 
 const index = ({
   auth,
@@ -120,6 +121,16 @@ const index = ({
               submitButtonText: "Entendido",
             });
           labFields["img"] = labTmpImg;
+
+          if (!isValidEmail(labFields.email.toString().trim())) {
+            (form.querySelector(`[name="email"]`) as HTMLInputElement).focus();
+            return showModal({
+              icon: "error",
+              title: "El correo proporcionado no es válido",
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            });
+          }
 
           const { created, data } = await createLaboratory(labFields);
 

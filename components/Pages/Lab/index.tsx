@@ -32,6 +32,7 @@ import Dropdown from "../../Dropdown";
 import { normalizeTestCustomId } from "../../../types/Test";
 import { unexpectedError } from "../../../utils/Error";
 import { Modal } from "../..";
+import { isValidEmail } from "../../../utils/Email";
 
 const index = ({
   lab,
@@ -371,14 +372,17 @@ const index = ({
                     const emailInput = document.querySelector(
                       `input[name="email"]`
                     ) as HTMLInputElement;
-                    if (!emailInput || !emailInput.value.trim())
-                      return showModal({
+                    if (!emailInput || !emailInput.value.trim()) {
+                      showModal({
                         icon: "error",
                         title:
                           "No puedes dejar el correo del empleado a invitar vacío",
                         buttons: "OK",
                         submitButtonText: "Entendido",
                       });
+                      if (emailInput) setTimeout(() => emailInput.focus(), 0);
+                      return;
+                    }
 
                     const alreadyInLab = lab.employees.findIndex(
                       ({ email }) => email === emailInput.value.trim()
@@ -390,6 +394,17 @@ const index = ({
                         timer: 2200,
                       });
                       emailInput.value = "";
+                      setTimeout(() => emailInput.focus(), 0);
+                      return;
+                    }
+
+                    if (!isValidEmail(emailInput.value.trim())) {
+                      showModal({
+                        icon: "error",
+                        title: "El correo proporcionado no es válido",
+                        buttons: "OK",
+                        submitButtonText: "Entendido",
+                      });
                       setTimeout(() => emailInput.focus(), 0);
                       return;
                     }

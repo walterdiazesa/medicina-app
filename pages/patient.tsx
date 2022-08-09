@@ -9,6 +9,8 @@ import { ResponseError } from "../types/Responses";
 import { unexpectedError } from "../utils/Error";
 import { Spinner } from "../components/Icons";
 import { PatientCard } from "../components/Card";
+import { isValidEmail } from "../utils/Email";
+import { showModal } from "../components/Modal/showModal";
 
 const patient = () => {
   const [patients, setPatients] = useState<Patient[] | null>();
@@ -46,12 +48,21 @@ const patient = () => {
         disableCloseWhenTouchOutside
         submitCallback={async (items: Patient) => {
           items["dateBorn"] = new Date(items["dateBorn"]);
+
+          if (!isValidEmail(items.email.trim()))
+            return showModal({
+              icon: "error",
+              title: "El correo proporcionado no es válido",
+              buttons: "OK",
+              submitButtonText: "Entendido",
+            });
+
           const patient = editPatient.current
             ? await update(editPatient.current.id, items)
             : await create(items);
           if (patient instanceof ResponseError) return unexpectedError(patient);
           setPatients((_patients) => {
-            const patientsList = [..._patients!];
+            const patientsList = _patients ? [..._patients] : [];
             if (editPatient.current) {
               const idx = patientsList.findIndex(({ id }) => patient.id === id);
               patientsList[idx] = { ...patient };
@@ -94,7 +105,8 @@ const patient = () => {
       <div className="mt-4">
         {!(
           document.querySelector(`[name="searchpatient"]`) as HTMLInputElement
-        )?.value.trim() ? (
+        )?.value.trim() &&
+        (!patients || !patients.length) ? (
           <h2 className="mt-8 text-xl font-semibold text-gray-400 flex items-center justify-center min-w-full">
             Introduce un término de búsqueda para mostrar los pacientes.
           </h2>
