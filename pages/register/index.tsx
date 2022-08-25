@@ -25,6 +25,7 @@ import SectionPage from "../../components/Pages/SectionPage";
 import { requestPutObjectURL } from "../../axios/Files";
 import axios from "axios";
 import { isValidEmail } from "../../utils/Email";
+import { ResponseError } from "../../types/Responses";
 
 const index = ({
   auth,
@@ -134,7 +135,7 @@ const index = ({
 
           const { created, data } = await createLaboratory(labFields);
 
-          if (!created) return unexpectedError(data);
+          if (!created) return unexpectedError(data as ResponseError);
 
           const auth = await tryAuth();
           setAuth(auth);

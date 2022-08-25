@@ -70,7 +70,10 @@ export const createLaboratory = async (labFields: Object) => {
   const { status, data } = await api.post("/labs", labFields, {
     withCredentials: true,
   });
-  return { created: status === 201, data };
+  return {
+    created: status === 201,
+    data: status === 201 ? (data as Lab) : new ResponseError(data),
+  };
 };
 
 export const patchUsers = async (
