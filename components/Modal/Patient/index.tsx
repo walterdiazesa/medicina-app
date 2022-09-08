@@ -89,8 +89,8 @@ const EditModal = ({
               {...(type === "edit" && {
                 defaultValue: patient.dateBorn,
               })}
-              fromDate={new Date().change("year", -120)}
-              toDate={new Date().change("year", -18)}
+              /* fromDate={new Date().change("year", -120)}
+              toDate={new Date().change("year", -18)} */
               onChange={(date) => setBornDate(date)}
               name="dateBorn"
             />

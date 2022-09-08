@@ -218,7 +218,7 @@ const index = () => {
                           }[]
                         ).map(
                           ({ name }, idx) =>
-                            (idx ? ", " : "") + name.replace("-PS", "")
+                            (idx ? ", " : "") + name?.replace("-PS", "")
                         )}
                         ]{/* [{"name":"GLU-PS"},{"name":"TCHO-PS"}] */}
                       </p>
