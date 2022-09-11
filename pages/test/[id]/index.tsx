@@ -845,8 +845,9 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
           ) : (
             <>
               <span>
-                test: {!!test}, TestPDF: {JSON.stringify(testPDF)}, preferences:{" "}
-                {test.lab?.preferences.useQR}, testQR: {testQR}
+                test: {String(!!test)}, TestPDF: {JSON.stringify(testPDF)},
+                preferences: {String(test.lab?.preferences.useQR)}, testQR:{" "}
+                {testQR}
               </span>
               <button
                 className={`w-full sm:w-auto mx-auto sm:mx-0 rounded-sm bg-red-500${

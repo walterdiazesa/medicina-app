@@ -133,7 +133,7 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
             }}
           >
             <View style={{ flexGrow: 1 }} />
-            <Image src={test.lab!.img} style={{ objectFit: "contain" }} />
+            {/* <Image src={test.lab!.img} style={{ objectFit: "contain" }} /> */}
           </View>
         </View>
         <View
