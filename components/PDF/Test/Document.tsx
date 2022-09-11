@@ -108,100 +108,91 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
           style={{
             display: "flex",
             flexDirection: "row",
-            height: "2cm",
+            width: "20cm",
           }}
         >
           <View
             style={{
               flex: 1,
+              maxWidth: "6.6cm",
+              minWidth: "6.6cm",
             }}
           >
-            <HeaderItem>{test.lab!.name}</HeaderItem>
-            <HeaderItem>{test.lab!.address}</HeaderItem>
-            <HeaderItem>{test.lab!.publicPhone}</HeaderItem>
-            {test.lab!.web && (
-              <HeaderItem>
-                <Link src={test.lab!.web}>{test.lab!.web}</Link>
-              </HeaderItem>
-            )}
-            <HeaderItem>{test.lab!.publicEmail}</HeaderItem>
+            <Text
+              style={{
+                fontWeight: 700,
+                fontSize: 7,
+                lineHeight: "0.5mm",
+                paddingHorizontal: "0.75mm",
+              }}
+            >
+              Prueba
+            </Text>
           </View>
           <View
             style={{
               flex: 1,
-              flexDirection: "row",
+              maxWidth: "6cm",
+              minWidth: "6cm",
             }}
           >
-            <View style={{ flexGrow: 1 }} />
-            <Image src={test.lab!.img} style={{ objectFit: "contain" }} />
+            <Text
+              style={{
+                fontWeight: 700,
+                fontSize: 7,
+                lineHeight: "0.5mm",
+                paddingHorizontal: "0.75mm",
+              }}
+            >
+              Resultado
+            </Text>
+          </View>
+          <View
+            style={{
+              flex: 1,
+              maxWidth: "2.4cm",
+              minWidth: "2.4cm",
+            }}
+          >
+            <Text
+              style={{
+                fontWeight: 700,
+                fontSize: 7,
+                lineHeight: "0.5mm",
+                paddingHorizontal: "0.75mm",
+              }}
+            >
+              Unidad
+            </Text>
+          </View>
+          <View
+            style={{
+              flex: 1,
+              maxWidth: "5cm",
+              minWidth: "5cm",
+            }}
+          >
+            <Text
+              style={{
+                fontWeight: 700,
+                fontSize: 7,
+                lineHeight: "0.5mm",
+                paddingHorizontal: "0.75mm",
+              }}
+            >
+              Rango de referencia
+            </Text>
           </View>
         </View>
         <View
           style={{
-            backgroundColor: "lightgray",
+            backgroundColor: "darkgray",
             height: "0.4mm",
             width: "100%",
-            marginVertical: "2mm",
+            marginTop: "0.5mm",
+            marginBottom: "0.7mm",
           }}
         />
-        <View
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            height: "1.4cm",
-          }}
-        >
-          <View style={{ flex: 1 }}>
-            <ReportItem element="Solicitud" value={getTestId(test)} />
-            <ReportItem element="Paciente" value={test.patient!.name} />
-            <ReportItem element="ID" value={test.patient!.dui} />
-            <ReportItem element="Sexo" value={test.patient!.sex} />
-            <ReportItem
-              element="Edad"
-              value={`${new Date(
-                test.patient!.dateBorn
-              ).toLocaleDateString()} (${new Date(test.patient!.dateBorn).diff(
-                new Date(),
-                "year"
-              )} años)`}
-            />
-          </View>
-          <View style={{ flex: 1 }}>
-            <ReportItem
-              element="Fecha y hora de la solicitud"
-              value={new Date(test.date).format("DD/MM/YYYY HH:MM A")}
-              right
-            />
-            <ReportItem
-              element="Creado por"
-              value={test.issuer?.name || test.lab!.name}
-              right
-            />
-            <ReportItem
-              element="Fecha y hora de la validación"
-              value={
-                test.validated
-                  ? new Date(test.validated).format("DD/MM/YYYY HH:MM A")
-                  : ""
-              }
-              right
-            />
-            <ReportItem
-              element="Validado por"
-              value={test.validator?.name || ""}
-              right
-            />
-          </View>
-        </View>
-        <View
-          style={{
-            backgroundColor: "lightgray",
-            height: "0.4mm",
-            width: "100%",
-            marginVertical: "2mm",
-          }}
-        />
-
         {test.tests.map((item) => (
           <View
             key={item.name}
