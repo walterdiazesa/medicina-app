@@ -201,95 +201,7 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
             marginVertical: "2mm",
           }}
         />
-        <View
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            width: "20cm",
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              maxWidth: "6.6cm",
-              minWidth: "6.6cm",
-            }}
-          >
-            <Text
-              style={{
-                fontWeight: 700,
-                fontSize: 7,
-                lineHeight: "0.5mm",
-                paddingHorizontal: "0.75mm",
-              }}
-            >
-              Prueba
-            </Text>
-          </View>
-          <View
-            style={{
-              flex: 1,
-              maxWidth: "6cm",
-              minWidth: "6cm",
-            }}
-          >
-            <Text
-              style={{
-                fontWeight: 700,
-                fontSize: 7,
-                lineHeight: "0.5mm",
-                paddingHorizontal: "0.75mm",
-              }}
-            >
-              Resultado
-            </Text>
-          </View>
-          <View
-            style={{
-              flex: 1,
-              maxWidth: "2.4cm",
-              minWidth: "2.4cm",
-            }}
-          >
-            <Text
-              style={{
-                fontWeight: 700,
-                fontSize: 7,
-                lineHeight: "0.5mm",
-                paddingHorizontal: "0.75mm",
-              }}
-            >
-              Unidad
-            </Text>
-          </View>
-          <View
-            style={{
-              flex: 1,
-              maxWidth: "5cm",
-              minWidth: "5cm",
-            }}
-          >
-            <Text
-              style={{
-                fontWeight: 700,
-                fontSize: 7,
-                lineHeight: "0.5mm",
-                paddingHorizontal: "0.75mm",
-              }}
-            >
-              Rango de referencia
-            </Text>
-          </View>
-        </View>
-        <View
-          style={{
-            backgroundColor: "darkgray",
-            height: "0.4mm",
-            width: "100%",
-            marginTop: "0.5mm",
-            marginBottom: "0.7mm",
-          }}
-        />
+
         {test.tests.map((item) => (
           <View
             key={item.name}
@@ -467,6 +379,38 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
             Persona validadora de esta solicitud
           </Text>
         </View>
+        {test.lab?.preferences.useQR && qr && (
+          <View
+            style={{
+              position: "absolute",
+              bottom: "7mm",
+              left: 0,
+              right: "5mm",
+            }}
+            fixed
+          >
+            <View
+              style={{
+                display: "flex",
+                flexDirection: "row-reverse",
+                alignItems: "flex-end",
+              }}
+            >
+              <Image
+                src={qr}
+                style={{
+                  flex: 1,
+                  objectFit: "contain",
+                  maxWidth: "3cm",
+                  maxHeight: "3cm",
+                  minWidth: "3cm",
+                  minHeight: "3cm",
+                  alignSelf: "flex-end",
+                }}
+              />
+            </View>
+          </View>
+        )}
       </Page>
     </PDFDocument>
   );
