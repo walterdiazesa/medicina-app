@@ -377,39 +377,96 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
             </View>
           </View>
         ))}
-
-        {test.lab?.preferences.useQR && qr && (
+        <View
+          style={{
+            position: "absolute",
+            bottom: "7mm",
+            left: "5mm",
+            right: 0,
+          }}
+          fixed
+        >
+          {test.remark && (
+            <Text
+              render={({ pageNumber, totalPages }) =>
+                pageNumber === totalPages
+                  ? `Observaciones: ${test.remark!.text}`
+                  : ""
+              }
+              style={{
+                fontWeight: 700,
+                fontSize: 7,
+                lineHeight: "0.5mm",
+                marginBottom: "1mm",
+              }}
+            />
+          )}
           <View
             style={{
-              position: "absolute",
-              bottom: "7mm",
-              left: 0,
-              right: "5mm",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "baseline",
             }}
-            fixed
           >
+            {test.lab?.signature &&
+              test.lab.signature.includes("lab-signatures.s3.filebase.com") && (
+                <Image
+                  style={{
+                    flex: 1,
+                    objectFit: "contain",
+                    maxWidth: "3cm",
+                    maxHeight: "1.5cm",
+                    minWidth: "3cm",
+                    minHeight: "1.5cm",
+                  }}
+                  src={test.lab.signature}
+                />
+              )}
+            {test.lab?.stamp &&
+              test.lab.stamp.includes("lab-signatures.s3.filebase.com") && (
+                <Image
+                  style={{
+                    flex: 1,
+                    objectFit: "contain",
+                    maxWidth: "6cm",
+                    maxHeight: "2.5cm",
+                    minWidth: "6cm",
+                    minHeight: "2.5cm",
+                    marginLeft: "0.4cm",
+                  }}
+                  src={test.lab.stamp}
+                />
+              )}
             <View
               style={{
-                display: "flex",
-                flexDirection: "row-reverse",
-                alignItems: "flex-end",
+                flex: 1,
+                objectFit: "contain",
+                maxWidth: "0.1mm",
+                maxHeight: "2.5cm",
+                minWidth: "0.1mm",
+                minHeight: "2.5cm",
               }}
-            >
-              <Image
-                src={qr}
-                style={{
-                  flex: 1,
-                  objectFit: "contain",
-                  maxWidth: "3cm",
-                  maxHeight: "3cm",
-                  minWidth: "3cm",
-                  minHeight: "3cm",
-                  alignSelf: "flex-end",
-                }}
-              />
-            </View>
+            />
           </View>
-        )}
+          <Text
+            style={{
+              fontWeight: 600,
+              fontSize: 7,
+              lineHeight: "0.5mm",
+            }}
+          >
+            {test.validator?.name || ""}
+          </Text>
+          <Text
+            style={{
+              fontWeight: 600,
+              fontSize: 7,
+              lineHeight: "0.5mm",
+            }}
+          >
+            Persona validadora de esta solicitud
+          </Text>
+        </View>
       </Page>
     </PDFDocument>
   );
