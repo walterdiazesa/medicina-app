@@ -108,6 +108,88 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
           style={{
             display: "flex",
             flexDirection: "row",
+            height: "2cm",
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+            }}
+          >
+            <View style={{ flexGrow: 1 }} />
+            <Image src={test.lab!.img} style={{ objectFit: "contain" }} />
+          </View>
+        </View>
+        <View
+          style={{
+            backgroundColor: "lightgray",
+            height: "0.4mm",
+            width: "100%",
+            marginVertical: "2mm",
+          }}
+        />
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            height: "1.4cm",
+          }}
+        >
+          <View style={{ flex: 1 }}>
+            <ReportItem element="Solicitud" value={getTestId(test)} />
+            <ReportItem element="Paciente" value={test.patient!.name} />
+            <ReportItem element="ID" value={test.patient!.dui} />
+            <ReportItem element="Sexo" value={test.patient!.sex} />
+            <ReportItem
+              element="Edad"
+              value={`${new Date(
+                test.patient!.dateBorn
+              ).toLocaleDateString()} (${new Date(test.patient!.dateBorn).diff(
+                new Date(),
+                "year"
+              )} años)`}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <ReportItem
+              element="Fecha y hora de la solicitud"
+              value={new Date(test.date).format("DD/MM/YYYY HH:MM A")}
+              right
+            />
+            <ReportItem
+              element="Creado por"
+              value={test.issuer?.name || test.lab!.name}
+              right
+            />
+            <ReportItem
+              element="Fecha y hora de la validación"
+              value={
+                test.validated
+                  ? new Date(test.validated).format("DD/MM/YYYY HH:MM A")
+                  : ""
+              }
+              right
+            />
+            <ReportItem
+              element="Validado por"
+              value={test.validator?.name || ""}
+              right
+            />
+          </View>
+        </View>
+        <View
+          style={{
+            backgroundColor: "lightgray",
+            height: "0.4mm",
+            width: "100%",
+            marginVertical: "2mm",
+          }}
+        />
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
             width: "20cm",
           }}
         >
