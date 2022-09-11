@@ -334,7 +334,7 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
                   paddingHorizontal: "0.75mm",
                 }}
               >
-                {parseInt(item.value)}
+                {parseFloat(item.value)}
               </Text>
             </View>
             <View
@@ -352,7 +352,7 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
                   paddingHorizontal: "0.75mm",
                 }}
               >
-                {item.value.replace(/\d+/, "")}
+                {item.value.replace(parseFloat(item.value), "")}
               </Text>
             </View>
             <View
