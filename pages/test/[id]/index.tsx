@@ -663,8 +663,8 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
               } grid-cols-2 gap-3 space-y-2 sm:space-y-0`}
             >
               {test.tests.map((item) => {
-                const value = parseInt(item.value);
-                const magnitude = item.value.replace(/\d+/, "");
+                const value = parseFloat(item.value) || 0;
+                const magnitude = item.value.replace(value.toString(), "");
                 const showWarning =
                   item.range &&
                   (value < item.range.between.from ||
@@ -697,7 +697,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
                         <span
                           {...(showWarning && { className: "text-yellow-600" })}
                         >
-                          {` ${257} - ${355}`}
+                          {` ${item.range.between.from} - ${item.range.between.to}`}
                         </span>
                       ) : (
                         "-"
