@@ -843,64 +843,57 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
               para poder generar el pdf
             </p>
           ) : (
-            <>
-              <span>
-                test: {String(!!test)}, TestPDF: {JSON.stringify(testPDF)},
-                preferences: {String(test.lab?.preferences.useQR)}, testQR:{" "}
-                {testQR}
-              </span>
-              <button
-                className={`w-full sm:w-auto mx-auto sm:mx-0 rounded-sm bg-red-500${
-                  !!(
-                    testPDF.loading ||
-                    !test ||
-                    !!testPDF.error ||
-                    (test.lab?.preferences.useQR && !testQR)
-                  )
-                    ? ""
-                    : " hover:bg-red-700 hover:scale-105"
-                } px-6 py-2 shadow-md my-2 transition duration-100 flex items-center justify-center text-white`}
-                disabled={
+            <button
+              className={`w-full sm:w-auto mx-auto sm:mx-0 rounded-sm bg-red-500${
+                !!(
                   testPDF.loading ||
                   !test ||
                   !!testPDF.error ||
                   (test.lab?.preferences.useQR && !testQR)
-                }
-                onClick={() => {
-                  if (
-                    testPDF.loading ||
-                    !test ||
-                    !!testPDF.error ||
-                    (test.lab?.preferences.useQR && !testQR)
-                  )
-                    return;
-                  const a = document.createElement("a");
-                  a.href = testPDF.url!;
-                  a.download = getTestId(test);
-                  document.body.appendChild(a);
-                  a.click();
-                  document.body.removeChild(a);
-                }}
-              >
-                {testPDF.loading ||
+                )
+                  ? ""
+                  : " hover:bg-red-700 hover:scale-105"
+              } px-6 py-2 shadow-md my-2 transition duration-100 flex items-center justify-center text-white`}
+              disabled={
+                testPDF.loading ||
                 !test ||
-                (test.lab?.preferences.useQR && !testQR) ? (
-                  <div className="animate-pulse flex items-center">
-                    <Spinner pulse /> Generando...
-                  </div>
-                ) : testPDF.error ? (
-                  <>
-                    <XCircleIcon className="h-6 w-6 mr-2" />
-                    {testPDF.error.substring(0, 20)}
-                  </>
-                ) : (
-                  <>
-                    <DocumentDownloadIcon className="h-6 w-6 mr-2 text-white" />
-                    Descargar Examen
-                  </>
-                )}
-              </button>
-            </>
+                !!testPDF.error ||
+                (test.lab?.preferences.useQR && !testQR)
+              }
+              onClick={() => {
+                if (
+                  testPDF.loading ||
+                  !test ||
+                  !!testPDF.error ||
+                  (test.lab?.preferences.useQR && !testQR)
+                )
+                  return;
+                const a = document.createElement("a");
+                a.href = testPDF.url!;
+                a.download = getTestId(test);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+              }}
+            >
+              {testPDF.loading ||
+              !test ||
+              (test.lab?.preferences.useQR && !testQR) ? (
+                <div className="animate-pulse flex items-center">
+                  <Spinner pulse /> Generando...
+                </div>
+              ) : testPDF.error ? (
+                <>
+                  <XCircleIcon className="h-6 w-6 mr-2" />
+                  {testPDF.error.substring(0, 20)}
+                </>
+              ) : (
+                <>
+                  <DocumentDownloadIcon className="h-6 w-6 mr-2 text-white" />
+                  Descargar Examen
+                </>
+              )}
+            </button>
           )}
         </div>
       </div>
