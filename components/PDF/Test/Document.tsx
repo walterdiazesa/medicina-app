@@ -119,6 +119,11 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
             <HeaderItem>{test.lab!.name}</HeaderItem>
             <HeaderItem>{test.lab!.address}</HeaderItem>
             <HeaderItem>{test.lab!.publicPhone}</HeaderItem>
+            {test.lab!.web ? (
+              <HeaderItem>
+                <Link src={test.lab!.web}>{test.lab!.web}</Link>
+              </HeaderItem>
+            ) : null}
             <HeaderItem>{test.lab!.publicEmail}</HeaderItem>
           </View>
           <View
