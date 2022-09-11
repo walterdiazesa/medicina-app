@@ -116,13 +116,9 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
               flex: 1,
             }}
           >
+            <HeaderItem>{test.lab!.name}</HeaderItem>
             <HeaderItem>{test.lab!.address}</HeaderItem>
             <HeaderItem>{test.lab!.publicPhone}</HeaderItem>
-            {test.lab!.web && (
-              <HeaderItem>
-                <Link src={test.lab!.web}>{test.lab!.web}</Link>
-              </HeaderItem>
-            )}
             <HeaderItem>{test.lab!.publicEmail}</HeaderItem>
           </View>
           <View
