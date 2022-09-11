@@ -133,7 +133,7 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
             }}
           >
             <View style={{ flexGrow: 1 }} />
-            {/* <Image src={test.lab!.img} style={{ objectFit: "contain" }} /> */}
+            <Image src={test.lab!.img} style={{ objectFit: "contain" }} />
           </View>
         </View>
         <View
@@ -467,38 +467,6 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
             Persona validadora de esta solicitud
           </Text>
         </View>
-        {test.lab?.preferences.useQR && qr && (
-          <View
-            style={{
-              position: "absolute",
-              bottom: "7mm",
-              left: 0,
-              right: "5mm",
-            }}
-            fixed
-          >
-            <View
-              style={{
-                display: "flex",
-                flexDirection: "row-reverse",
-                alignItems: "flex-end",
-              }}
-            >
-              <Image
-                src={qr}
-                style={{
-                  flex: 1,
-                  objectFit: "contain",
-                  maxWidth: "3cm",
-                  maxHeight: "3cm",
-                  minWidth: "3cm",
-                  minHeight: "3cm",
-                  alignSelf: "flex-end",
-                }}
-              />
-            </View>
-          </View>
-        )}
       </Page>
     </PDFDocument>
   );
