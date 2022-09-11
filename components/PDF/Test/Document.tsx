@@ -290,96 +290,94 @@ const Document = ({ test, qr }: { test: Test; qr?: string }) => {
             marginBottom: "0.7mm",
           }}
         />
-        <View
-          style={{
-            position: "absolute",
-            bottom: "7mm",
-            left: "5mm",
-            right: 0,
-          }}
-          fixed
-        >
-          {test.remark && (
-            <Text
-              render={({ pageNumber, totalPages }) =>
-                pageNumber === totalPages
-                  ? `Observaciones: ${test.remark!.text}`
-                  : ""
-              }
-              style={{
-                fontWeight: 700,
-                fontSize: 7,
-                lineHeight: "0.5mm",
-                marginBottom: "1mm",
-              }}
-            />
-          )}
+        {test.tests.map((item) => (
           <View
+            key={item.name}
             style={{
               display: "flex",
               flexDirection: "row",
-              alignItems: "baseline",
+              width: "20cm",
+              borderBottom: "0.3mm dashed #C8C8C8",
+              marginBottom: "0.7mm",
             }}
           >
-            {test.lab?.signature &&
-              test.lab.signature.includes("lab-signatures.s3.filebase.com") && (
-                <Image
-                  style={{
-                    flex: 1,
-                    objectFit: "contain",
-                    maxWidth: "3cm",
-                    maxHeight: "1.5cm",
-                    minWidth: "3cm",
-                    minHeight: "1.5cm",
-                  }}
-                  src={test.lab.signature}
-                />
-              )}
-            {test.lab?.stamp &&
-              test.lab.stamp.includes("lab-signatures.s3.filebase.com") && (
-                <Image
-                  style={{
-                    flex: 1,
-                    objectFit: "contain",
-                    maxWidth: "6cm",
-                    maxHeight: "2.5cm",
-                    minWidth: "6cm",
-                    minHeight: "2.5cm",
-                    marginLeft: "0.4cm",
-                  }}
-                  src={test.lab.stamp}
-                />
-              )}
             <View
               style={{
                 flex: 1,
-                objectFit: "contain",
-                maxWidth: "0.1mm",
-                maxHeight: "2.5cm",
-                minWidth: "0.1mm",
-                minHeight: "2.5cm",
+                maxWidth: "6.6cm",
+                minWidth: "6.6cm",
               }}
-            />
+            >
+              <Text
+                style={{
+                  fontWeight: 700,
+                  fontSize: 7,
+                  lineHeight: "0.5mm",
+                  paddingHorizontal: "0.75mm",
+                }}
+              >
+                {getTestItemName(item.name).name} {item.assign}
+              </Text>
+            </View>
+            <View
+              style={{
+                flex: 1,
+                maxWidth: "6cm",
+                minWidth: "6cm",
+              }}
+            >
+              <Text
+                style={{
+                  fontWeight: 700,
+                  fontSize: 7,
+                  lineHeight: "0.5mm",
+                  paddingHorizontal: "0.75mm",
+                }}
+              >
+                {parseFloat(item.value)}
+              </Text>
+            </View>
+            <View
+              style={{
+                flex: 1,
+                maxWidth: "2.4cm",
+                minWidth: "2.4cm",
+              }}
+            >
+              <Text
+                style={{
+                  fontWeight: 700,
+                  fontSize: 7,
+                  lineHeight: "0.5mm",
+                  paddingHorizontal: "0.75mm",
+                }}
+              >
+                {item.value.replace(parseFloat(item.value), "")}
+              </Text>
+            </View>
+            <View
+              style={{
+                flex: 1,
+                maxWidth: "5cm",
+                minWidth: "5cm",
+              }}
+            >
+              <Text
+                style={{
+                  fontWeight: 700,
+                  fontSize: 7,
+                  lineHeight: "0.5mm",
+                  paddingHorizontal: "0.75mm",
+                }}
+              >
+                {!item.range
+                  ? "-"
+                  : `${item.range.between.from} - ${item.range.between.to}`}
+              </Text>
+            </View>
           </View>
-          <Text
-            style={{
-              fontWeight: 600,
-              fontSize: 7,
-              lineHeight: "0.5mm",
-            }}
-          >
-            {test.validator?.name || ""}
-          </Text>
-          <Text
-            style={{
-              fontWeight: 600,
-              fontSize: 7,
-              lineHeight: "0.5mm",
-            }}
-          >
-            Persona validadora de esta solicitud
-          </Text>
-        </View>
+        ))}
+
         {test.lab?.preferences.useQR && qr && (
           <View
             style={{
