@@ -80,7 +80,7 @@ const pricing = ({
                 </div>
                 <div className="flex items-center p-8  uppercase">
                   <Button className="mt-3 text-lg w-full px-6 py-3">
-                    Seleccionar
+                    +503 7617-7277
                   </Button>
                 </div>
               </div>
@@ -120,7 +120,7 @@ const pricing = ({
 
               <div className="flex items-center p-8  uppercase">
                 <Button className="mt-3 text-lg w-full px-6 py-3">
-                  Seleccionar
+                  +503 7617-7277
                 </Button>
               </div>
             </div>
@@ -157,7 +157,7 @@ const pricing = ({
 
                 <div className="flex items-center p-8  uppercase">
                   <Button className="mt-3 text-lg w-full px-6 py-3">
-                    Seleccionar
+                    +503 7617-7277
                   </Button>
                 </div>
               </div>
@@ -173,29 +173,27 @@ const pricing = ({
           .
         </p>
       </div>
-      {router.query.flags?.includes("calculator") && (
-        <div>
-          <Wave />
-          <div className="w-full bg-gradient-to-tr from-teal-200 to-teal-500 text-center px-2 md:px-8 pb-8 sm:pb-16 pt-4 sm:pt-0">
-            <h3 className="font-bold text-white text-3xl">
-              Calculadora de precios
-            </h3>
-            <div className="flex justify-center">
-              <p className="text-justify text-teal-contrast">
-                Si no estás seguro de los costos mensuales o simplemente deseas
-                conocerlos de primera mano puedes adaptar los parametros a las
-                necesidades de tu laboratorio
-              </p>
-            </div>
-            <div className="mt-4">
-              <Calculator
-                chemPricingSteps={chemPricingSteps}
-                chemBasePricing={chemBasePricing}
-              />
-            </div>
+      <div>
+        <Wave />
+        <div className="w-full bg-gradient-to-tr from-teal-200 to-teal-500 text-center px-2 md:px-8 pb-8 sm:pb-16 pt-4 sm:pt-0">
+          <h3 className="font-bold text-white text-3xl">
+            Calculadora de precios
+          </h3>
+          <div className="flex justify-center">
+            <p className="text-justify text-teal-contrast">
+              Si no estás seguro de los costos mensuales o simplemente deseas
+              conocerlos de primera mano puedes adaptar los parametros a las
+              necesidades de tu laboratorio
+            </p>
+          </div>
+          <div className="mt-4">
+            <Calculator
+              chemPricingSteps={chemPricingSteps}
+              chemBasePricing={chemBasePricing}
+            />
           </div>
         </div>
-      )}
+      </div>
     </>
   );
 };
