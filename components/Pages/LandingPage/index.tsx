@@ -92,20 +92,16 @@ const index = () => {
               más altos estándares de seguridad, estés donde estés.
             </p>
             <div className="w-full flex justify-center my-4 items-center">
-              <ButtonWithIcon
-                text="Cotizar"
-                className="py-3 px-8"
-                name="btn_pricing"
-                textClassName="ml-0"
-                onClick={() =>
-                  window.scrollTo({
-                    behavior: "smooth",
-                    top: document.body.scrollHeight,
-                  })
-                }
-              >
-                <></>
-              </ButtonWithIcon>
+              <Link href="/pricing">
+                <ButtonWithIcon
+                  text="Ver precios"
+                  className="py-3 px-8"
+                  name="btn_pricing"
+                  textClassName="ml-0"
+                >
+                  <></>
+                </ButtonWithIcon>
+              </Link>
               <Link href="/register">
                 <span className="ml-6 text-teal-500 font-semibold cursor-pointer hover:text-teal-600">
                   Crea tu laboratorio
