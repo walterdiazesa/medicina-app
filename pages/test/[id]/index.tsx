@@ -227,10 +227,15 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
     if (test.lab && test.lab.preferences.useQR && !testQR)
       (async () => {
         let accessLink: string;
+        console.log({
+          fromRouterClosure: router.query.access,
+          window: window.location.href,
+        });
         if (router.query.access) {
           accessLink = window.location.href;
         } else {
           const _accessLink = await getAccessLink(test.id!);
+          console.log({ _accessLink });
           if (_accessLink instanceof ResponseError)
             return unexpectedError(_accessLink);
           accessLink = _accessLink;
