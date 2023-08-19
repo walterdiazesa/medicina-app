@@ -183,16 +183,13 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
   //#endregion
 
   useEffect(() => {
-    if (
-      Object.keys(router.query).length &&
-      (auth || router.query.access) &&
-      test
-    ) {
+    const accessLink = new URL(window.location.href).searchParams.get("access");
+    if ((auth || accessLink) && test) {
       getLaboratory({
         id: test.lab!.id,
         fields: { img: true, preferences: true, signature: true, stamp: true },
-        ...(router.query.access && {
-          access: router.query.access as string,
+        ...(accessLink && {
+          access: accessLink,
           test: test.id!,
         }),
       }).then((labData) => {
@@ -204,7 +201,7 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
         setIsAuthorized(!!labData);
       });
     }
-  }, [auth, test, router]);
+  }, [auth, test]);
 
   const [testQR, setTestQR] = useState("");
 
@@ -224,22 +221,13 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
 
   useEffect(() => {
     if (!test) return;
-    console.log({ outsideClosure: router.query.access });
     if (test.lab && test.lab.preferences.useQR && !testQR)
       (async () => {
-        let accessLink: string;
-        console.log({
-          fromRouterClosure: router.query.access,
-          window: window.location.href,
-          accessFromWindow: new URL(window.location.href).searchParams.get(
-            "access"
-          ),
-        });
-        if (router.query.access) {
-          accessLink = window.location.href;
-        } else {
+        let accessLink = new URL(window.location.href).searchParams.get(
+          "access"
+        );
+        if (!accessLink) {
           const _accessLink = await getAccessLink(test.id!);
-          console.log({ _accessLink });
           if (_accessLink instanceof ResponseError)
             return unexpectedError(_accessLink);
           accessLink = _accessLink;
@@ -267,10 +255,10 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
         const rawPng = await qrCode.getRawData("png");
         if (rawPng) setTestQR(URL.createObjectURL(rawPng));
       })();
-  }, [test, pdfState, router, isAuthorized, testQR, test?.validator]);
+  }, [test, pdfState, isAuthorized, testQR, test?.validator]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => test && updatePDF(), [test, pdfState, router, testQR]);
+  useEffect(() => test && updatePDF(), [test, pdfState, testQR]);
 
   if (isAuthorized === undefined)
     return (
