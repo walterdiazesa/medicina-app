@@ -224,12 +224,16 @@ const index = ({ test, auth }: { test: Test | null; auth: Auth }) => {
 
   useEffect(() => {
     if (!test) return;
+    console.log({ outsideClosure: router.query.access });
     if (test.lab && test.lab.preferences.useQR && !testQR)
       (async () => {
         let accessLink: string;
         console.log({
           fromRouterClosure: router.query.access,
           window: window.location.href,
+          accessFromWindow: new URL(window.location.href).searchParams.get(
+            "access"
+          ),
         });
         if (router.query.access) {
           accessLink = window.location.href;
